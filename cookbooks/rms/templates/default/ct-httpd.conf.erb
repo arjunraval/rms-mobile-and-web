@@ -1,0 +1,42 @@
+#
+# This is a RSA Access Manager Agent 4.9 SP3 configuration file
+#
+
+# Load and add the ClearTrust authorization module.
+# For Apache 1.3, it should be the last one added (the first one
+# to be invoked by Apache)
+#
+LoadModule ct_auth_module /opt/rsa/agent-49SP3-apache/rsa-axm/agent-49SP3-apache/lib/libct_apache22_agent.so
+
+<IfModule ct_apache_mod.c>
+
+  # Where the agent configuration is located:
+  CTAgentRoot /prod/msp/domains/<%= node['rms']['appname']%>_domains/msp_<%= node['rms']['appname']%>_apache_01/webservers/Apache_<%= node['rms']['apache_version']%>
+
+  # Where the ClearTrust forms are located.  This directory must
+  # always be configured for authentication, so the ClearTrust module
+  # can intercept and handle the requests.
+  #
+  Alias /cleartrust/ "/opt/rsa/agent-49SP3-apache/rsa-axm/agent-49SP3-apache/htdocs/"
+  <Directory "/opt/rsa/agent-49SP3-apache/rsa-axm/agent-49SP3-apache/htdocs/">
+    AuthType Basic
+    Require valid-user
+    AuthName CT
+    Order allow,deny
+    Allow from all    
+  </Directory>
+
+  # Any part of a web site to be protected by ClearTrust must be
+  # configured for authentication.  See the Apache documentation
+  # for details.
+  #
+  # This example will make ClearTrust protect the entire web site,
+  # unless there are previous Location overriding directives.
+  #
+  <Location />
+    AuthType Basic
+    Require valid-user
+    AuthName CT
+  </Location>
+
+</IfModule>

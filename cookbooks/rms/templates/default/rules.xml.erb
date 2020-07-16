@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Rules
+    xmlns="http://www.rsasecurity.com/ClearTrust/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.rsasecurity.com/ClearTrust/rules.xsd">
+    <Rule>
+        <argument type="URI" expression="/bigip-monitoring/*"/>
+        <action type="HTTP" argument="200" />
+    </Rule>
+    <Rule>
+        <argument type="URI" expression="/errors/*"/>
+        <action type="HTTP" argument="200" />
+    </Rule>
+    <Rule>
+        <argument type="URI" expression="/index.html"/>
+        <action type="HTTP" argument="200" />
+    </Rule>
+    <Rule>
+        <argument type="URI" expression="/trafficcontrol/*"/>
+        <action type="HTTP" argument="200" />
+    </Rule>
+    <Rule>
+      <argument type="URI" expression="/cardless-atm-service-web/proxy/eapi/customers/~/sessions" />
+      <action type="HTTP" argument="200" />
+    </Rule>
+    <Rule>
+      <argument type="URI" expression="/cardless-atm-service-web/proxy/eapi/customers/~/profiles/*" />
+      <action type="HTTP" argument="200" />
+    </Rule>
+    <Rule>
+      <argument type="URI" expression="/cardless-atm-service-web/customers/~/sessions" />
+      <action type="HTTP" argument="200" />
+    </Rule>
+    <Rule>
+      <argument type="URI" expression="/cardless-atm-service-web/customers/~/profiles/~/answers" />
+      <action type="HTTP" argument="200" />
+    </Rule>
+    <Rule>
+      <argument type="URI" expression="/cardless-atm-service-web/customers/~/sessions" />
+      <action type="HTTP" argument="200" />
+    </Rule>
+    <Rule>
+      <argument type="URI" expression="/cardless-atm-service-web/login" />
+      <action type="HTTP" argument="200" />
+    </Rule>
+    <Rule>
+      <argument type="URI" expression="/cardless-atm-service-web/logout" />
+      <action type="HTTP" argument="200" />
+    </Rule>
+    <Rule>
+      <argument type="URI" expression="/cardless-atm-service-web/settings" />
+      <action type="HTTP" argument="200" />
+    </Rule>
+    <Rule>
+      <argument type="URI" expression="/cardless-atm-service-web/health" />
+      <action type="HTTP" argument="200" />
+    </Rule>
+    <Rule>
+      <argument type="URI" expression="/smb-company-api/*" />
+      <action type="HTTP" argument="200" />
+    </Rule>
+    <Rule>
+      <argument type="URI" expression="/product-selector-web/*" />
+      <action type="HTTP" argument="200" />
+    </Rule>
+    <Rule>
+      <argument type="URI" expression="/lobby-one/*" />
+      <action type="HTTP" argument="200" />
+    </Rule>
+	<!--
+    <Rule>
+        <argument type="URI" expression="^/$" />
+        <action type="HTTP" argument="200" />
+    </Rule>
+    <Rule>
+        <argument type="URI" expression="/robots.txt" />
+        <action type="HTTP" argument="200" />
+    </Rule>
+    <Rule>
+        <argument type="URI" expression="/favico.ico" />
+        <action type="HTTP" argument="200" />
+    </Rule>
+    <Rule>
+        <argument type="URI" expression="/404.html" />
+        <action type="HTTP" argument="200" />
+    </Rule>
+    <Rule>
+        <argument type="URI" expression="/*/session" />
+        <action type="HTTP"  argument="200" method="POST" />
+    </Rule>
+    <Rule>
+        <argument type="URI" expression="/*/content/*" />
+        <action type="HTTP" argument="200" method="GET" />
+    </Rule>
+	-->
+</Rules>

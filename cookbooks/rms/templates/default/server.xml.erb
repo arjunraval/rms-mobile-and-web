@@ -1,0 +1,17 @@
+<Server port="11401" shutdown="msp_rms_tomcat_01_SHTDN">
+<GlobalNamingResources>
+<!-- OpenSource UPF JDBC Resources -->
+<!-- @Audit -->
+<!-- @Preferences -->
+<!-- @Toggle -->
+</GlobalNamingResources>
+    <Service name="Catalina">
+        <Connector port="11400" server="CheckMikeCheck" scheme="http" proxyPort="80" maxHttpHeaderSize="16384" secure="<%= node['rms']['secure']%>" />
+        <Engine name="Catalina" defaultHost="localhost">
+            <Logger className="org.apache.catalina.logger.FileLogger" />
+            <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="true">
+                <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs" prefix="localhost_access_log." suffix=".txt" conditionUnless="NO_ACCESS_LOG" pattern="%h %l %u %t &quot;%r&quot; %s %b" />
+            </Host>
+        </Engine>
+    </Service>
+</Server>

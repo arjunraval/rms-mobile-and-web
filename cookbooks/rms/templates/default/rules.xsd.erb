@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="http://www.rsasecurity.com/ClearTrust/"
+        xmlns="http://www.rsasecurity.com/ClearTrust/"
+        xmlns:ct="http://www.rsasecurity.com/ClearTrust/"
+        version="4.9SP3"
+        elementFormDefault="qualified">
+
+  <xsd:include schemaLocation="ctsyntax.xsd"/>
+
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+      RSA Access Manager Web Agents rules configuration schema.
+      Version: 4.9SP3
+      Copyright (c) 2007-2012 EMC Corporation.All rights reserved.
+    </xsd:documentation>
+  </xsd:annotation>
+
+  <xsd:element name="Rules">
+
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">
+        The Access Manager Web Agent Rules configuration element. This element
+        encapsulates the rule definitions.
+      </xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="Rule" maxOccurs="unbounded"/>
+      </xsd:sequence>
+    </xsd:complexType>
+
+  </xsd:element>
+
+  <xsd:element name="Rule">
+
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">
+        The Rule element definition. Each rule is composed of one or more
+        arguments and a action.
+      </xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="argument" maxOccurs="unbounded"/>
+        <xsd:element ref="action" maxOccurs="4"/>
+      </xsd:sequence>
+    </xsd:complexType>
+
+  </xsd:element>
+
+  <xsd:element name="argument" maxOccurs="unbounded">
+
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">
+        The rule arguments. Each rule must contain atleast one
+        argument. If multiple arguments are specified then the
+        associated action(s) for the rule is taken only when all
+        the arguments are matched.
+      </xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:complexType>
+
+      <xsd:attribute name="type" type="ctArgumentType">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">
+            The type of argument for the rule. Valid values are
+            "URI", "Method", "Header", "Protocol", "QueryString",
+            "ClientIP".
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:attribute>
+
+      <xsd:attribute name="argument" type="xsd:string" use="optional">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">
+            This attribute is only required if the argument type is
+            "Header". This attribute hold the header name.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:attribute>
+
+      <xsd:attribute name="expression" type="xsd:string">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">
+            This attribute should be used to represent the regular
+            expression that will be used to evaluate the rule argument.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:attribute>
+
+    </xsd:complexType>
+
+  </xsd:element>
+
+  <xsd:element name="action">
+
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">
+        The rule action. Each rule can contain multiple actions with a
+        different action type. When all the rule arguments are matched
+        the the specified action(s) for the rule are executed.
+      </xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:complexType>
+
+      <xsd:attribute name="type" type="ctRuleAction">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">
+            Action type can be one of "HTTP" (to send a HTTP response code),
+            "LOG" (to log the request parameters to the log file at the
+            specified log level), "NOTIFY" (for send a SNMP notification) or
+            "LOCK" (to lock the client by IP address for specified amount
+            of time. All of the actions require arguments.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:attribute>
+
+      <xsd:attribute name="argument" type="xsd:string">
+        <xsd:annotation>
+          <xsd:documentation xml:lang="en">
+            HTTP action requires the response code (eg: 302) and
+            any associated argument (eg: /ct_access_denied_en.html) for
+            the response. LOG type action requires the log level. And
+            NOTIFY action require some text to send along with the
+            notification.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:attribute>
+
+    </xsd:complexType>
+
+  </xsd:element>
+
+</xsd:schema>

@@ -1,0 +1,469 @@
+# =================================================
+#               Basic settings
+# =================================================
+
+#
+# ServerRoot: The top of the directory tree under which the server's
+# configuration, error, and log files are kept.
+# Do NOT add a slash at the end of the directory path.
+#
+ServerRoot /prod/msp/domains/<%= node['javamsp']['appname']%>_domains/msp_<%= node['javamsp']['appname']%>_apache_01
+
+
+#
+# PidFile: The file in which the server should record its process
+# identification number when it starts.
+#
+PidFile msp_<%= node['javamsp']['appname']%>_apache_01.pid
+
+
+
+# =================================================
+# General settings
+# =================================================
+
+#
+# If you wish httpd to run as a different user or group, you must run
+# httpd as root initially and it will switch.
+#
+# User/Group: The name (or #number) of the user/group to run httpd as.
+#  . On SCO (ODT 3) use "User nouser" and "Group nogroup".
+#  . On HPUX you may not be able to use shared memory as nobody, and the
+#    suggested workaround is to create a user www and use that user.
+#  NOTE that some kernels refuse to setgid(Group) or semctl(IPC_SET)
+#  when the value of (unsigned)Group is above 60000;
+#  don't use Group #-1 on these systems!
+#
+User <%= node['javamsp']['appuser']%>
+Group <%= node['javamsp']['appgroup']%>
+
+
+#
+# ServerAdmin: Your address, where problems with the server should be
+# e-mailed.  This address appears on some server-generated pages, such
+# as error documents.  e.g. admin@your-domain.com
+# This directive should not be allowed as per ITRO recommendations
+#
+# Example:
+# ServerAdmin root@localhost
+#
+
+
+#
+# ServerName gives the name and port that the server uses to identify itself.
+# This can often be determined automatically, but we recommend you specify
+# it explicitly to prevent problems during startup.
+#
+# If this is not set to valid DNS name for your host, server-generated
+# redirections will not work.  See also the UseCanonicalName directive.
+#
+# If your host doesn't have a registered DNS name, enter its IP address here.
+# You will have to access it by its address anyway, and this will make
+# redirections work in a sensible way.
+#
+# Example:
+# ServerName www.example.com:80
+#
+ServerName <%= node['ipaddress']%>
+
+
+# This directive configures how the server should determine self host and port.
+# MSP standard allows default functioning for the same which is turning Off.
+UseCanonicalName Off
+
+# This directive is used to configure footer for server generated documents
+# MSP standard disables the footer settings
+ServerSignature Off
+
+# This directive is used to perform the DNS lookup for host name.
+# MSP doesn't have any functionality which requires this. And default needs to be set to Off
+HostnameLookups Off
+
+# This directive is used to configure response header with the server information
+# MSP standard just allows minimum information in the header stating "Server : Apache"
+ServerTokens Prod
+
+#
+# DocumentRoot: The directory out of which you will serve your
+# documents. By default, all requests are taken from this directory, but
+# symbolic links and aliases may be used to point to other locations.
+#
+DocumentRoot /prod/msp/app/<%= node['javamsp']['appname']%>_apps/msp_<%= node['javamsp']['appname']%>_apache_01
+DirectoryIndex index.html
+
+
+#
+# Listen: Allows you to bind Apache to specific IP addresses and/or
+# ports, in addition to the default. See also the <VirtualHost>
+# directive.
+#
+# Change this to Listen on specific IP addresses as shown below to
+# prevent Apache from glomming onto all bound IP addresses (0.0.0.0)
+#
+# Example:
+# Listen 12.34.56.78:80
+#
+Listen <%= node['rms']['apache_listen_port']%>
+
+
+
+# =================================================
+#               Load Modules
+# =================================================
+
+#
+# Dynamic Shared Object (DSO) Support
+#
+# To be able to use the functionality of a module which was built as a DSO you
+# have to place corresponding `LoadModule' lines at this location so the
+# directives contained in it are actually available _before_ they are used.
+# Statically compiled modules (those listed by `httpd -l') do not need
+# to be loaded here.
+#
+# Example:
+# LoadModule foo_module modules/mod_foo.so
+#
+LoadModule authz_host_module modules/mod_authz_host.so
+LoadModule include_module modules/mod_include.so
+LoadModule log_config_module modules/mod_log_config.so
+LoadModule env_module modules/mod_env.so
+LoadModule ext_filter_module modules/mod_ext_filter.so
+LoadModule mime_magic_module modules/mod_mime_magic.so
+LoadModule expires_module modules/mod_expires.so
+LoadModule deflate_module modules/mod_deflate.so
+LoadModule headers_module modules/mod_headers.so
+LoadModule usertrack_module modules/mod_usertrack.so
+LoadModule setenvif_module modules/mod_setenvif.so
+LoadModule mime_module modules/mod_mime.so
+LoadModule autoindex_module modules/mod_autoindex.so
+LoadModule info_module modules/mod_info.so
+LoadModule vhost_alias_module modules/mod_vhost_alias.so
+LoadModule dir_module modules/mod_dir.so
+LoadModule alias_module modules/mod_alias.so
+LoadModule rewrite_module modules/mod_rewrite.so
+LoadModule proxy_module modules/mod_proxy.so
+LoadModule proxy_balancer_module modules/mod_proxy_balancer.so
+LoadModule proxy_http_module modules/mod_proxy_http.so
+LoadModule proxy_connect_module modules/mod_proxy_connect.so
+LoadModule suexec_module modules/mod_suexec.so
+LoadModule cgi_module modules/mod_cgi.so
+#LoadModule weblogic_module plugin/mod_wl_22.so
+LoadModule userdir_module modules/mod_userdir.so
+LoadModule status_module modules/mod_status.so
+#LoadModule ga_module /prod/msp/domains/<%= node['javamsp']['appname']%>_domains/msp_<%= node['javamsp']['appname']%>_apache_01/entrust/lib/libApache22Connector.so
+
+
+#
+# Disable Trace Java MSP
+#
+TraceEnable off
+
+
+#
+# Visual Sciences
+#
+# The following modules are not loaded by default:
+#
+# LoadModule cern_meta_module modules/mod_cern_meta.so
+# LoadModule asis_module modules/mod_asis.so
+#
+
+
+#
+# Load config files from the config directory "/etc/httpd/conf.d".
+#
+Include conf.d/*.conf
+
+#
+# Load RSA Clear Trust Agent configuration
+#
+<% if node['rms']['rsa_enabled'] == true -%>
+Include /prod/msp/domains/<%= node['javamsp']['appname']%>_domains/msp_<%= node['javamsp']['appname']%>_apache_01/webservers/Apache_<%= node['rms']['apache_version']%>/conf/ct-httpd.conf
+<% end -%>
+
+
+
+# =================================================
+#              Performance settings
+# =================================================
+
+#
+# Timeout: The number of seconds before receives and sends time out.
+#
+Timeout 300
+
+
+#
+# KeepAlive: Whether or not to allow persistent connections (more than
+# one request per connection). Set to "Off" to deactivate.
+#
+KeepAlive On
+
+
+#
+# MaxKeepAliveRequests: The maximum number of requests to allow
+# during a persistent connection. Set to 0 to allow an unlimited amount.
+# We recommend you leave this number high, for maximum performance.
+#
+MaxKeepAliveRequests 10000
+
+
+#
+# KeepAliveTimeout: Number of seconds to wait for the next request from the
+# same client on the same connection.
+#
+# The 60 second setting ties up a worker for 60 seconds waiting to see 
+# if the user sends another request. Withe IE 8, it will tie up 5 workers for each
+# user since IE 8 opens 5 connections per user.  For most web apps that significantly reduces
+# capacity.  There is a little overhead with setting up a new TCP connection, but freeing up the 
+# workers to service other people is usually much better. For high volume applications, this must be reduced.
+#
+KeepAliveTimeout 5
+
+
+
+# =================================================
+#               MPM settings
+# =================================================
+
+#
+# prefork MPM
+# StartServers: number of server processes to start
+# MinSpareServers: minimum number of server processes which are kept spare
+# MaxSpareServers: maximum number of server processes which are kept spare
+# ServerLimit: maximum value for MaxClients for the lifetime of the server
+# MaxClients: maximum number of server processes allowed to start
+# MaxRequestsPerChild: maximum number of requests a server process serves
+#
+<IfModule prefork.c>
+	StartServers      8
+	MinSpareServers   5
+	MaxSpareServers   20
+	MaxClients      150
+	MaxRequestsPerChild  20000
+</IfModule>
+
+
+#
+# worker MPM
+# StartServers: initial number of server processes to start
+# MaxClients: maximum number of simultaneous client connections
+# MinSpareThreads: minimum number of worker threads which are kept spare
+# MaxSpareThreads: maximum number of worker threads which are kept spare
+# ThreadsPerChild: constant number of worker threads in each server process
+# MaxRequestsPerChild: maximum number of requests a server process serves
+#
+<IfModule worker.c>
+	StartServers        2 
+	MaxClients         150
+	MinSpareThreads     25
+	MaxSpareThreads     75
+	ThreadsPerChild     25
+	MaxRequestsPerChild  0
+</IfModule>
+
+
+
+# =================================================
+#               Security settings
+# =================================================
+
+RewriteEngine on
+RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
+RewriteRule .* - [F]
+UserDir disabled
+
+#
+# This is default global configuration as per ITRO standards
+#
+<Directory />
+	Options None
+	AllowOverride None
+	deny from all
+</Directory>
+
+
+#
+# This should be changed to whatever you set DocumentRoot to.
+#
+<Directory /prod/msp/app/<%= node['javamsp']['appname']%>_apps/msp_<%= node['javamsp']['appname']%>_apache_01>
+	Options -Indexes FollowSymLinks IncludesNOEXEC
+	AllowOverride None
+	Order allow,deny
+	Allow from all
+</Directory>
+
+
+
+# =================================================
+#               Logger settings
+# =================================================
+
+#
+# LogLevel: Control the number of messages logged to the error_log.
+# Possible values include: debug, info, notice, warn, error, crit,
+# alert, emerg.
+#
+LogLevel <%= node['rms']['apache_log_level']%>
+ErrorLog "|/usr/sbin/rotatelogs -l /prod/msp/logs/<%= node['javamsp']['appname']%>_logs/msp_<%= node['javamsp']['appname']%>_apache_01/error.log.%Y-%m-%d-%H_%M_%S 86400"
+CustomLog "|/usr/sbin/rotatelogs -l /prod/msp/logs/<%= node['javamsp']['appname']%>_logs/msp_<%= node['javamsp']['appname']%>_apache_01/access.log.%Y-%m-%d-%H_%M_%S 86400" combined env=!doNotLog
+
+
+#
+# The following directives define some format nicknames for use with
+# a CustomLog directive (see below).
+#
+# LogFormat "%h %l %u %t \"%r\" %>s %b" common
+LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+LogFormat "%{Referer}i -> %U" referer
+LogFormat "%{User-agent}i" agent
+
+
+
+# =================================================
+# Virtual hosts
+# =================================================
+
+<VirtualHost *:<%= node['rms']['apache_listen_port']%>>
+	RewriteEngine on
+	RewriteCond %{REQUEST_URI} ^server/-info$
+	RewriteRule .* - [F,L]
+	RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
+	RewriteRule .* - [F]
+	#RewriteRule ^/$ /MSPTestWeb/ [R]
+	UserDir disabled
+
+    ServerName  <%= node['ipaddress']%>:<%= node['rms']['apache_listen_port']%>
+	DocumentRoot /prod/msp/app/<%= node['javamsp']['appname']%>_apps/msp_<%= node['javamsp']['appname']%>_apache_01
+	AllowEncodedSlashes On
+	ProxyTimeout 60	
+    ProxyErrorOverride Off
+
+	# Local Instance
+    ProxyPass 				/bigip-monitoring/status.txt 	!
+    ProxyPass 				/errors/error.html 				!
+	ProxyPass 				/index.html 					!
+    ProxyPass 				/server-status 					!
+	            			
+	# RMS Cardless
+    Proxypass 				/cardless-atm-service-web	<%= node['rms']['cardless_app_elb']%>/cardless-atm-service-web nocanon
+    ProxyPassReverse 		/cardless-atm-service-web	<%= node['rms']['cardless_app_elb']%>/cardless-atm-service-web
+    #Proxypass 				/cardless-atm-service-web		http://<%= node['javamsp']['backend']['vip']%>/cardless-atm-service-web nocanon
+    #ProxyPassReverse 		/cardless-atm-service-web		http://<%= node['javamsp']['backend']['vip']%>/cardless-atm-service-web
+    <Location /cardless-atm-service-web>
+           Order allow,deny
+           Allow from all
+    </Location>
+	
+	# RMS Company
+    Proxypass 				/smb-company-api		http://<%= node['javamsp']['backend']['vip']%>/smb-company-api nocanon
+    ProxyPassReverse 		/smb-company-api		http://<%= node['javamsp']['backend']['vip']%>/smb-company-api
+
+    <Location /smb-company-api>
+           Order allow,deny
+           Allow from all
+    </Location>
+		
+	# RMS Product
+    Proxypass 				/product-selector-web		http://<%= node['javamsp']['backend']['vip']%>/product-selector-web
+    ProxyPassReverse 		/product-selector-web		http://<%= node['javamsp']['backend']['vip']%>/product-selector-web
+
+    <Location /product-selector-web>
+           Order allow,deny
+           Allow from all
+    </Location>
+	
+	# Lobby One
+	Proxypass 				/lobby-one		http://<%= node['javamsp']['backend']['vip']%>/lobby-one
+    ProxyPassReverse 		/lobby-one		http://<%= node['javamsp']['backend']['vip']%>/lobby-one
+
+    <Location /lobby-one>
+           Order allow,deny
+           Allow from all
+    </Location>
+    
+	#
+	# This combination of settings will have the browser cache all .css, .js, images, etc but not
+	# .jsp, .php, etc.  It should be a good default.  Some applications may need additional exclusions or shorter expiration.
+	# "LoadModule expires_module modules/mod_expires.so" is also required, but it is already part of this config.
+	# Following settings can be enabled on the application need and a restart is needed.
+	#
+		#
+	    # The expiration directives can be set at the server, virtual host and directory level.
+	    # each level can be set differently.
+		#
+	    # ExpiresActive On
+	
+	
+		#
+	    # The time value is seconds.
+	    # Set the browser's expiration to 6 hours after the last access for all content.
+	    #
+		# ExpiresDefault A21600
+	
+	
+		#
+	    # Turn off browser caching for text/html content so dynamic page generation isn't effected
+	    #
+		# ExpiresByType text/html A0
+	 
+	 
+	#
+	# This will compress .css, .js, etc for faster delivery to the browser and reduced bandwidth usage.
+	# "LoadModule deflate_module modules/mod_deflate.so" is also required, but it is already part of this config.
+	#
+	
+	    <IfModule mod_deflate.c>
+	        # Enabling compression
+	        SetOutputFilter DEFLATE
+	
+	        # Don't compress images - waste of CPU
+	        SetEnvIfNoCase Request_URI \
+	        \.(?:gif|jpe?g|png)$ no-gzip dont-vary
+	
+	        # Make sure proxies don't deliver the wrong content
+	        Header append Vary User-Agent env=!dont-vary
+	    </IfModule>
+	    
+		
+		#
+	    # Directive to redirect in case of error
+	    #
+		ErrorDocument 404 /errors/error.html
+	    ErrorDocument 413 default
+	    
+		
+	    #
+	    # Allowing only GET POST HTTP request methods as per ITRO standards
+	    #
+	    <Location / >
+	    	    <LimitExcept GET POST DELETE Options>
+	    		Deny from all
+	    	    </LimitExcept>
+	    </Location>
+	
+	    <Location /server-status>
+	    	SetHandler server-status
+	    	Order Deny,Allow
+	    	Deny from all
+	  	#	Allow from 10
+	  	#	Allow from 172
+	    </Location>
+	
+	    <ProxyMatch ^/trafficcontrol/TrafficControlServlet>
+			Order Deny,Allow
+			Deny from all
+			Allow from 10
+	    </ProxyMatch>
+	
+	#
+	# GAVirtualServerID msp_rms_apache_01_80
+	#
+	ErrorLog "|/usr/sbin/rotatelogs -l /prod/msp/logs/e<%= node['javamsp']['appname']%>_logs/msp_<%= node['javamsp']['appname']%>_apache_01/error.log.%Y-%m-%d-%H_%M_%S 86400"
+	CustomLog "|/usr/sbin/rotatelogs -l /prod/msp/logs/<%= node['javamsp']['appname']%>_logs/msp_<%= node['javamsp']['appname']%>_apache_01/access.log.%Y-%m-%d-%H_%M_%S 86400" combined env=!doNotLog
+	
+</VirtualHost>
+
+
+# gaRuntimeRoot "/prod/msp/domains/<%= node['javamsp']['appname']%>domains/msp_<%= node['javamsp']['appname']%>_apache_01/entrust"
+# gaWebAgent main-<%= node['javamsp']['appname']%>-msp_<%= node['javamsp']['appname']%>apache_01

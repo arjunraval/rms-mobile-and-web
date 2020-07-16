@@ -1,0 +1,2996 @@
+############################################################################
+# RSA Access Manager Agent for Apache 2.2.x-based HTTP Server configuration file
+# Version 4.9SP3
+#
+# Copyright (c) 2007-2012 EMC Corporation. 
+# All rights reserved.
+# http://www.rsasecurity.com
+############################################################################
+
+
+<Global>
+
+
+# Sets the level of logging required. This option is configured only at global
+# level and cannot be overwritten by virtual hosts.
+# 
+# Allowed Values:
+#   The log level specified includes messages from all preceding levels.
+# 
+#   Value         Description
+#   -----         -----------
+#   None          No messages are logged.
+#   Config        Configuration information logged.
+#                  Example: 'Agent log level: Critical'
+#   Misconfig     Misconfigured parameter information logged.
+#                  'Invalid or error in configuration file. Cannot start Agent'
+#   Critical      Critical errors are logged.
+#                  'Unable to contact Dispatcher/Authorization Server(s)'
+#   Error         Errors from processing a request are logged, but the Agent
+#                 can continue to process other requests.
+#                  'Unable to retrieve DN from Certificate'
+#   Warning       Less critical error messages are logged.
+#                  'Unable to extract session information from token'
+#   Security      Security related error messages are logged, such as when a
+#                 bad User ID or bad password is encountered.
+#                  'User [foobar] authentication [Basic] failed'
+#   Info          Logs somewhat verbose information when processing a request.
+#                  'Request [from 1.2.3.4] for resource [/index.html]'
+#   Debug         Logs debugging information.
+#   Massive       Logs a complete tracing of individual functions.
+# 
+# NOTE:
+#   It is not recommended to set the log level above 'Critical' for production
+#   web servers.
+#
+cleartrust.agent.log_level=<%= node['rms']['rsa_log_level']%>
+
+
+# Controls how the logging is done.
+# 
+# Allowed Values:
+# 
+#   Value         Meaning
+#   -----         -------
+#   00            Log messages are written to a single log file only
+#                 (invalidates all other flags).
+#   01            Log messages are written to standard output only. On
+#                 Windows, the messages are written to the debug window.
+#   02            Overwrites the existing log file. Default is to append.
+#   04            Log messages are written to a single log file. In addition,
+#                 the messages are written to standard output. On Windows,
+#                 the messages are written to the debug window.
+#   08            Log messages are written to standard error instead of
+#                 standard output. Only applicable to non-Windows platforms.
+#   16            If the web server spawns multiple processes, the Agent is
+#                 spawned for each. If this value is set, each process will
+#                 write log messages to a separate file whose name contains
+#                 the process ID.
+#   32            If using the short time format (%s), setting this flag will
+#                 output the time with millisecond resolution for each log
+#                 message. This is rarely needed.
+# 
+# NOTE:
+#   These flags can be combined. For example, to use flags '04' and '32',
+#   configure this parameter with '36'.
+#
+cleartrust.agent.log_flags=04
+
+
+# Specifies the absolute path to the log file.
+# 
+# Allowed Value:
+#   Absolute path name.
+# 
+# NOTE:
+#   When log flag '16' is set, this name is suffixed with the PID
+#   of each process.
+# 
+#   The given log file name should also specify a file name extension.
+# 
+# Example:
+#    cleartrust.agent.log_file=/opt/ctrust/agent/iplanet/logs/ct_agent.log
+#
+cleartrust.agent.log_file=/prod/msp/logs/<%= node['javamsp']['appname']%>_logs/msp_<%= node['javamsp']['appname']%>_apache_01/ct_agent.log
+
+
+# Specifies the log file rotation size.
+# 
+# Allowed Value:
+#   Any positive integer followed by Mbs (Megabytes), or Kbs (Kilobytes).
+#   The log file size should not be greater than 500 Mb. The minimum value
+#   for this parameter is 4 KB. If set to less than 4 KB, log file size
+#   rotation is set to 500 Mb.
+#
+cleartrust.agent.log_file_rotation_maxsize=50 Mbs
+
+
+# Specifies the log file rotation interval.
+# 
+# Allowed Value:
+#   Any positive integer followed by Mins (minutes), Hrs (hours) or Days
+#   (days). The minimum value for this parameter is 1 minute. If set to
+#   less than 1 minute, log file interval rotation is turned off.
+#
+cleartrust.agent.log_file_rotation_interval=150 Hrs
+
+
+# Specifies the log format.
+# 
+# Allowed Values:
+#   The following fields can be used while specifying the log format.
+# 
+#   Field         Full form
+#   -----         ---------
+#   %t            Date/time stamp in international standard format (ISO 8601)
+#   %x            Date/time in local format (strftime("%x %X"))
+#   %u            Date/UTC time in ISO format (YYYY-MM-DD HH:MM:SS Z)
+#   %s            Shorter time format (UNIX time with milliseconds)
+#   %p            Process ID
+#   %i            Thread ID
+#   %d            Log level (example: 'Misconfig')
+#   %f            Source file where the log message originated
+#   %l            Line number in the source file
+#   %n            Name of the function logging the message
+# 
+# Examples:
+#    cleartrust.agent.log_format="%t - [%p/%i] - <%%d> - [%n] - " (on UNIX)
+#    cleartrust.agent.log_format="%s:[%p/%i]:<%%d>:[%n]:" (useful for debugging)
+#    cleartrust.agent.log_format="%t - [%i] - <%%d> - [%n] - " (on Windows)
+#
+cleartrust.agent.log_format="%t - [%i] - <%%d> - "
+
+
+# Specifies what information of dispatcher and authorization servers
+# will be logged.
+# 
+# Allowed Values:
+# 
+#   Value         Meaning
+#   -----         -------
+#   None          None of the information of dispatcher and authorization
+#                 servers will be logged.
+#   Dispatcher    Only the information of dispatchers will be logged.
+#   Authserver    Only the information of authorization servers will be logged.
+#   Both          The information of both dispatchers and authorization servers
+#                 will be logged.
+# 
+# Examples:
+#    cleartrust.agent.log_pool_option=None
+#    cleartrust.agent.log_pool_option=Dispatcher
+#    cleartrust.agent.log_pool_option=Authserver
+#    cleartrust.agent.log_pool_option=Both
+#
+cleartrust.agent.log_pool_option=Both
+
+
+# Specifies the Agent modules to debug. This is only to be used when the
+# RSA ClearTrust support team requests you to do so. They will provide the
+# list of modules. This option is configured only at the global level, and
+# cannot be overwritten by virtual hosts.
+# 
+# Allowed Values:
+#   A comma-separated list of RSA ClearTrust modules obtained from the
+#   RSA ClearTrust support team.
+#
+cleartrust.agent.debug_modules=
+
+
+# Specifies whether the Agent should use process-safe log file rotation or
+# an older, deprecated rotation scheme.
+# 
+# Process Safe Log File Rotation - This log rotation scheme is both
+# process-safe and thread-safe. If enabled, the Agent will create a log
+# file with the name specified by the .log_file parameter and with the date
+# and time of creation inserted (using the format YYYYMMDDHHmmSS). For example,
+# if the name specified is 'ct_agent.log', the created file will be named
+# 'ct_agent.20050325145500.log'. When it is time for log rotation, the Agent
+# will close the current log file and open a new one. If writing a log file
+# for each web server process (see .log_flags), the Agent will additionally add
+# the process ID (PID) to the name, e.g. 'ct_agent.1234.20050325145500.log'.
+# Note that if using this rotation scheme, setting the .log_flags parameter to
+# overwrite the log file at startup will have no effect.
+# 
+# Deprecated Log Rotation - This is the only log rotation scheme previously
+# available in the Agent and is preserved for backwards compatibility. This
+# log rotation scheme is thread-safe, but not process-safe. The Agent will
+# always write log entries to a file with the name specified by the '.log_file'
+# parameter. At rotation time, the Agent will close the log file and rename it
+# to append the date and time of rotation. Additionally, 'size_rotate' or
+# 'time_rotate' will be appended to the file name depending on which
+# rotation criteria was satisfied. An example of a rotated log file name
+# would be 'ct_agent.log.20050425150600.size_rotate'. The Agent will then
+# open a new log file with the name specified in '.log_file'.
+# Note: This scheme should not be used if the web server spawns multiple
+# processes.
+# 
+# From IIS 6.0 Onwards, if cleartrust.agent.log_flags is set to 16,
+# then log file name would be appended with the application pool name
+# that is processed.
+# 
+# Allowed Values:
+#   True     Use the process-safe log rotation scheme.
+#   False    Use the deprecated log rotation scheme.
+# 
+# Default Value:
+#   True
+#
+cleartrust.agent.log_process_safe_file_rotation=True
+
+
+# Sets the protected resource status cache time to live (TTL). When a resource
+# is requested by a user, the resource status (protected or unprotected) is
+# determined by making a call to the Authorization Server. This information can
+# be cached in the Agent for subsequent requests, resulting in faster response
+# times from the web server. The value specified for this parameter is used to
+# determine how frequently the Agent prunes the cache entries.
+# 
+# NOTE:
+#   Each type of cache can only be configured globally.
+# 
+# Allowed Values:
+#   A valid integer followed by Secs (seconds), Mins (minutes), or Hrs (hours).
+#   If the resource status is not going to change frequently, set this to a
+#   high value. A value of '0 Secs' means that the cache entries are never
+#   pruned based on TTL.
+# 
+#   If caching is not desired, do not specify a value for this parameter.
+# 
+# Dependencies:
+#   This parameter should be used in conjunction with
+#   protected_resource_cache_size.
+#
+cleartrust.agent.protected_resource_cache_ttl=10 Mins
+
+
+# Sets the protected resource status cache size. When the cache table reaches
+# the size specified by this parameter, the oldest entries are removed from the
+# cache first.
+# 
+# NOTE:
+#   Each type of cache can only be configured globally.
+# 
+# Allowed Values:
+#   A valid integer.
+#   A value of '0' means the cache table can grow infinitely; there is no
+#   limit on the table size but entries will still be pruned as they expire.
+# 
+#   If caching is not desired, do not specify a value for this parameter.
+# 
+# Dependencies:
+#   Configure this parameter in conjunction with
+#   protected_resource_cache_ttl.
+#
+cleartrust.agent.protected_resource_cache_size=10000
+
+
+# Sets the unprotected resource status cache time to live (TTL). Refer to the
+# description of protected_resource_cache_ttl.
+# 
+# NOTE:
+#   Each type of cache can only be configured globally.
+# 
+# Allowed Values:
+#   A valid integer followed by Secs (seconds), Mins (minutes), or Hrs (hours).
+#   If the resource status is not going to change frequently, set this to a
+#   high value. A value of '0 Secs' means that the cache entries are never
+#   pruned based on TTL.
+# 
+#   If caching is not desired, do not specify a value for this parameter.
+# 
+# Dependencies:
+#   Configure this parameter in conjunction with
+#   unprotected_resource_cache_size.
+#
+cleartrust.agent.unprotected_resource_cache_ttl=5 Mins
+
+
+# Sets the unprotected resource status cache size. Refer to the description
+# of protected_resource_cache_size.
+# 
+# NOTE:
+#   Each type of cache can only be configured globally.
+# 
+# Allowed Values:
+#   A valid integer.
+#   A value of '0' means the cache table can grow infinitely; there is no
+#   limit on the table size but entries will still be pruned as they expire.
+# 
+#   If caching is not desired, do not specify a value for this parameter.
+# 
+# Dependencies:
+#   Configure this parameter in conjunction with
+#   unprotected_resource_cache_ttl.
+#
+cleartrust.agent.unprotected_resource_cache_size=10000
+
+
+# Sets the authorization-allow cache time to live (TTL). Once a user has
+# authenticated, the Authorization Server is invoked to check if the user has
+# access to the protected resource being requested. This entitlement
+# information can be cached so that subsequent requests by the user for the
+# resource will have a faster response time. The value specified for this
+# parameter is used to determine how frequently the Agent prunes the cache
+# entries.
+# 
+# NOTE:
+#   Each type of cache can only be configured globally.
+# 
+# Allowed Values:
+#   A valid integer followed by Secs (seconds), Mins (minutes), or Hrs (hours).
+#   If user entitlements are not going to change frequently, set this to a high
+#   value. A value of '0 Secs' means that the cache entries are never pruned
+#   based on TTL.
+# 
+#   If caching is not desired, do not specify a value for this parameter.
+# 
+# Dependencies:
+#   Configure this parameter in conjunction with authz_allow_cache_size.
+#
+cleartrust.agent.authz_allow_cache_ttl=5 Mins
+
+
+# Sets the authorization-allow cache size. When the cache table reaches the
+# size specified by this parameter, the oldest entries are removed from the
+# cache first.
+# 
+# NOTE:
+#   Each type of cache can only be configured globally.
+# 
+# Allowed Values:
+#   A valid integer.
+#   A value of '0' means the cache table can grow infinitely; there is no
+#   limit on the table size but entries will still be pruned as they expire.
+# 
+#   If caching is not desired, do not specify a value for this parameter.
+# 
+# Dependencies:
+#   Configure this parameter in conjunction with authz_allow_cache_ttl.
+#
+cleartrust.agent.authz_allow_cache_size=10000
+
+
+# Sets the authorization-deny cache time to live (TTL). Refer to the
+# description of authz_allow_cache_ttl.
+# 
+# NOTE:
+#   Each type of cache can only be configured globally.
+# 
+# Allowed Values:
+#   A valid integer followed by Secs (seconds), Mins (minutes), or Hrs (hours).
+#   If user entitlements are not going to change frequently, set this to a high
+#   value. A value of '0 Secs' means that the cache entries are never pruned
+#   based on TTL.
+# 
+#   If caching is not desired, do not specify a value for this parameter.
+# 
+# Dependencies:
+#   Configure this parameter in conjunction with authz_deny_cache_size.
+#
+cleartrust.agent.authz_deny_cache_ttl=10 Mins
+
+
+# Sets the authorization-deny cache size. Refer to the description of
+# .authz_allow_cache_size.
+# 
+# NOTE:
+#   Each type of cache can only be configured globally.
+# 
+# Allowed Values:
+#   A valid integer.
+#   A value of '0' means the cache table can grow infinitely; there is no
+#   limit on the table size but entries will still be pruned as they expire.
+# 
+#   If caching is not desired, do not specify a value for this parameter.
+# 
+# Dependencies:
+#   Configure this parameter in conjunction with authz_deny_cache_ttl.
+#
+cleartrust.agent.authz_deny_cache_size=10000
+
+
+# Sets the cookie cache time to live (TTL). Cookies issued to the client
+# browser can be cached in unencrypted form by the Agent for better
+# performance. This parameter controls how frequently the cached cookies are
+# pruned.
+# 
+# NOTE:
+#   Each type of cache can only be configured globally.
+# 
+# Allowed Values:
+#   A valid integer followed by Secs (seconds), Mins (minutes), Hrs (hours).
+#   A value of '0 Secs' means that the cached entries are never pruned based on
+#   TTL.
+# 
+#   If caching is not desired, do not specify a value for this parameter.
+# 
+# Dependencies:
+#   Configure this parameter in conjunction with token_cache_size.
+#
+cleartrust.agent.token_cache_ttl=5 Mins
+
+
+# Sets the cookie cache size. When the cache table reaches the size specified
+# by this parameter, the oldest entries are removed from the cache first.
+# 
+# NOTE:
+#   Each type of cache can only be configured globally.
+# 
+# Allowed Values:
+#   A valid integer.
+#   A value of '0' means the cache table can grow infinitely; there is no
+#   limit on the table size but entries will still be pruned as they expire.
+# 
+#   If caching is not desired, do not specify a value for this parameter.
+# 
+# Dependencies:
+#   Configure this parameter in conjunction with token_cache_ttl.
+#
+cleartrust.agent.token_cache_size=10000
+
+
+# Use a separate connection pool process to handle all connections,
+# rather than having each Apache process maintain its own set of
+# connections to the ClearTrust servers.
+# 
+# This parameter is ignored when Apache is not running in a
+# multi-process configuration and on Windows platforms.
+#
+cleartrust.agent.shared_pool.enable=True
+
+
+# Sets the user properties cache time to live (TTL). User properties can be
+# published as HTTP headers (if userprops is set). If enabled, the
+# Authorization Server must be invoked to fetch them. This information can be
+# cached in the Agent for subsequent requests, resulting in faster response
+# times from the web server. The value specified for this parameter is used to
+# determine how frequently the Agent prunes the cache entries.
+# 
+# NOTE:
+#   Each type of cache can only be configured globally.
+# 
+# Allowed Values:
+#   A valid integer followed by Secs (seconds), Mins (minutes), or Hrs (hours).
+#   If the resource status is not going to change frequently, set this to a
+#   high value. A value of '0 Secs' means that the cache entries are never
+#   pruned based on TTL.
+# 
+#   If caching is not desired, do not specify a value for this parameter. It
+#   will also be disabled if no value is set for userprops.
+#
+cleartrust.agent.user_properties_cache_ttl=10 Mins
+
+
+# Sets the size of the user properties cache. When the cache table reaches the
+# size specified by this parameter, the oldest entries are removed from the
+# cache first.
+# 
+# NOTE:
+#   Each type of cache can only be configured globally.
+# 
+# Allowed Values:
+#   A valid integer.
+# 
+# Dependencies:
+#   This parameter has no effect when userprops or user_properties_cache_ttl
+#   is disabled.
+#
+cleartrust.agent.user_properties_cache_size=10000
+
+
+# Specifies the apache user name as mentioned in the apache's conf file .
+# 
+# Allowed Value:
+#   A valid user name mentioned in apache httpd.conf file
+# 
+# NOTE:
+# This parameter is only required when using apache webserver. If not
+# specified it will take the default as daemon as user name.If the
+# apache conf file has some other user name other then daemon this
+# parameter is required else logs will not be generated correctly.
+# 
+# This parameter is ignored when Apache is not running in a
+# multi-process configuration and on Windows platforms.
+# 
+# Example:
+#    cleartrust.agent.apache_user_name=daemon
+#
+cleartrust.agent.apache_user_name=daemon
+
+
+# Sets the location where the core file should be created if a
+# pool proxy process becomes unresponsive during a pool monitor event.
+# If the value for this parameter is not specified, no core file would
+# be generated.
+# 
+# This parameter is ignored when Apache is not running in a
+# multi-process configuration and on Windows platforms.
+# 
+# Note: Please make sure you use the debug binary when this is enabled.
+# 
+# Allowed Values:
+#     A valid directory path which is writable.
+# 
+# Example:
+#     cleartrust.agent.core_file_path=/home
+#
+cleartrust.agent.core_file_path=
+
+
+# Sets the timers for request interval and timeout respectively.
+# Timer1: Sets the interval for the watchdog to send the keep alive
+#         request to the pool proxy.
+# Timer2: Sets the time watchdog should wait for the response from the
+#         pool proxy.
+# 
+# Timer2 should always be less than Timer1.
+# 
+# This parameter is ignored when Apache is not running in a
+# multi-process configuration and on Windows platforms.
+# 
+# Default Values:
+#     120 Secs, 90 Secs
+# 
+# Allowed Values:
+#     A valid integer followed by Secs (seconds), Mins (minutes),
+# or Hrs (hours).
+# 
+# Example:
+#     cleartrust.agent.pool_process_monitor_timeout = 120 Secs, 90 Secs.
+#
+cleartrust.agent.pool_process_monitor_timeout=
+
+
+# Specifies whether the Agent should protect virtual hosts.
+# 
+#  Allowed Values:
+#    True     Agent is enabled for virtual hosts.
+#    False    Agent is disabled for virtual hosts.
+# 
+#    On default installation, all virtual hosts are protected.
+#
+cleartrust.agent.enabled=True
+
+
+# Specifies the ID of the web server as configured in the RSA ClearTrust
+# Entitlements Manager. This parameter is typically redefined for each virtual
+# host declared.
+# 
+# Allowed Values:
+#   The name of the default web server (or virtual host) as defined in the
+#   RSA ClearTrust data store. Must be an exact match, otherwise the web server
+#   or virtual host will not be protected.
+# 
+# Example:
+#   cleartrust.agent.web_server_name=RSAWebServer (or)
+#   cleartrust.agent.web_server_name=webserver
+#
+cleartrust.agent.web_server_name=<%= node['rms']['webserver']%>
+
+
+# Specifies the list of Web Agent eXtensions (WAX) to be loaded. Each extension
+# must be specified as an absolute path to the shared object or DLL. Multiple
+# extensions will be called in the order specified.
+# 
+# Allowed Values:
+#   A semicolon- or comma-separated list of absolute paths and filenames.
+# 
+# NOTE:
+#   Any extensions specified in a virtual host declaration will be load. If
+#   no extensions specified in a virtual host, extensions registered in the
+#   global section will be invoked.
+# 
+# Example:
+#   cleartrust.agent.wax=/opt/ctrust/acm/lib/libct_isso_ap.so
+#   cleartrust.agent.wax=/opt/ctrust/agent/apache/lib/libct_isso_ap.so
+#   cleartrust.agent.wax=/opt/ctrust/agent/iplanet/lib/libct_isso_ip.so
+#   cleartrust.agent.wax=C:\\RSA\\ClearTrustAgent\\lib\\libct_isso_iis5.dll
+#
+cleartrust.agent.wax=
+
+
+# Specifies whether single sign-on (cookie) functionality is enabled between
+# this web server and other RSA ClearTrust-protected servers.
+# 
+# Allowed Values:
+#   True
+#   False
+# 
+# Dependencies:
+#   This parameter must be enabled in order to achieve single sign-On within a
+#   domain.
+#
+cleartrust.agent.sso=True
+
+
+# Sets the maximum lifetime of an SSO session. Sessions that are active
+# for longer than the specified period are invalidated and require
+# re-authentication.
+# 
+# Allowed Values:
+#   Any positive integer followed by Secs (seconds), Mins (minutes), or Hrs
+#   (hours).
+# 
+# NOTE:
+#   If the value specified is equal to 0,default value of 8 Hrs will be used.
+#
+cleartrust.agent.session_lifetime=8 Hrs
+
+
+# Sets the maximum amount of time between requests, after which sessions are
+# considered idle and are invalidated, requiring re-authentication.
+# 
+# Allowed Values:
+#   Any positive integer followed by Secs (seconds), Mins (minutes), or Hrs
+#   (hours).
+# 
+# NOTE:
+#   The value specified is shortened by the amount of time set for
+#   cookie_touch_window.
+#
+cleartrust.agent.idle_timeout=15 Mins
+
+
+# Specifies whether a user is re-challenged for credentials after a session is
+# invalidated.
+# 
+# Allowed Values:
+#   True     The user is challenged based on the required authentication type
+#            for the requested page.
+#   False    The user will be denied access to the resource once a session has
+#            expired.
+#
+cleartrust.agent.auto_challenge=True
+
+
+# Specifies how much the cookie creation/touch/expiration times are
+# allowed to vary from the current server clock. For SSO to function
+# correctly, all servers involved must have synchronized clocks. This
+# parameter controls how much tolerance there is for variations in the
+# synchronization.
+# 
+# Allowed Values:
+#   Any positive integer followed by Secs (seconds), Mins (minutes), or Hrs
+#   (hours).
+#
+cleartrust.agent.fudge_factor=5 Mins
+
+
+# Specifies the domain name in the HTTP 'Set-Cookie' header for SSO
+# tokens. Use the domain name or the fully qualified domain name (FQDN)
+# of the web server.
+# 
+# Allowed Values:
+#   A valid domain name, prepended with a period (required by some browsers).
+#   A fully qualified domain name (FQDN). Do not prepend with a period.
+#   No value means that a site-specific cookie will be set.
+# 
+# Example:
+#   For the SSO token to be returned to all servers in the 'rsa.com' domain:
+#   cleartrust.agent.cookie_domain=.rsa.com
+# 
+#   For the SSO token to be returned to the 'finance.rsa.com' server only:
+#   cleartrust.agent.cookie_domain=finance.rsa.com
+#
+cleartrust.agent.cookie_domain=.checkmikecheck.com
+
+
+# Specifies the path on the web server where the SSO cookie applies. If
+# only a subset of the content tree is protected with RSA ClearTrust,
+# this option may be specified to prevent browsers from sending the
+# cookie when requesting files from other parts of the tree. An empty
+# value means that the current URL path will be used (that is,
+# '/cleartrust' will be the path set for the cookie after successful
+# authentication); this is not recommended.
+# 
+# Allowed Values:
+#   A valid content directory path on this web server.
+# 
+#   The SSO cookie applies to all resources on the web server. This is the
+#   recommended value.
+# 
+# Example:
+#   cleartrust.agent.path=/webapps
+#
+cleartrust.agent.path=/
+
+
+# Specifies that the browser should accept and send cookies only via secure
+# methods. Used to restrict cookies to SSL connections.
+# 
+# Allowed Values:
+#   True     Mark cookies generated from this agent for secure use only.
+#   False    Mark cookies generated from this agent not only for secure use.
+#
+cleartrust.agent.secure=False
+
+
+# Specifies that cookies should be marked as secure over a non-SSL connection.
+# This will accommodate situations where the agent is running behind an
+# ssl offloading device.
+# 
+# Allowed Values:
+#   True    Set the secure attribute on the cookie. The secure attribute on
+#           cookie will be set by the agent even over an unsecure connection.
+# 
+#   False   Set the secure attribute on the cookie according to the
+#           cleartrust.agent.secure parameter.
+# 
+# Default Value :
+#   False
+# 
+# Dependencies:
+#   The parameter is only evaluated if cleartrust.agent.secure=True
+#
+cleartrust.agent.set_cookie_secure=False
+
+
+# Sets the amount of time a cookie persists in a browser.
+# 
+# Allowed Values:
+#   Any positive integer followed by Secs (seconds), Mins (minutes), or Hrs
+#   (hours).
+#   If set to zero, the cookie is valid until the browser exits.
+#
+cleartrust.agent.cookie_expiration=0 Mins
+
+
+# Controls whether tokens are used instead of user names in certain
+# calls to the Authorization Server. This parameter should normally only
+# be changed when using an external property provider in the
+# Authorization Server and that property provider needs access to token
+# contents.
+# 
+# Allowed Values:
+#   User    Identify users by their user names. This is the default setting.
+# 
+#   Token   Identify users by their token both in server calls and in
+#           Agent-side caches. This setting makes token data available
+#           to external property providers in the Authorization Server,
+#           but reduces the efficiency of the "authz" caches as well
+#           as the user properties cache.
+# 
+#   Both    Identify users by their token, if applicable, but cache
+#           calls based on user name. This setting makes the token
+#           data available to the property provider, and has a relatively
+#           low performance impact.  However, cached results may not
+#           be consistent with non-cached results if the property
+#           provider depends on token data that is expected to change
+#           frequently.
+# 
+#           Depending on the application this potential inconsistency
+#           may be acceptable or be made acceptable by adjusting the
+#           cookie_touch_window and/or cache TTL settings.
+# 
+#   Session Identify users by their token, if applicable, but cache
+#           calls based on a subset of the token contents, including the
+#           user buffer but not including the last touch time. Any secret
+#           passwords from the token are replaced by their lengths.
+# 
+#           As this information will not change when the token is
+#           "touched" but otherwise not modified, caching is almost as
+#           efficient as basing the cache key on the user name. Only
+#           a few values, mentioned above, are inconsistent with the
+#           actual content of the token.
+#
+cleartrust.agent.send_token_as_user_id=Session
+
+
+# Enables/disables session IP checking. When enabled, the Agent accepts
+# cookies only from the same IP address to which they were originally
+# issued. In some environments this functionality does not apply. For example,
+# in an environment with load balancing across multiple servers, the client IP
+# will change frequently, resulting in rejected cookies and frequent
+# re-authentication.
+# 
+# Allowed Values:
+#   True     Enables IP checks. RSA Security strongly recommends enabling this
+#            function.
+#   False    Disables IP checks.
+# 
+# Dependencies:
+#   For more granular control over IP checking, also refer to these parameters:
+#   .allow_subnet_masking, .ip_check_exclusion_list, .cookie_exclusion_list
+#
+cleartrust.agent.cookie_ip_check=False
+
+
+# Specifies the name of the HTTP request header used by a proxy to relay the
+# true client IP address. Some proxies have this capability - for example,
+# Squid uses 'X-Forwarded-For'. Whatever header is specified needs to
+# take this form (using the Squid example): 'X-Forwarded-For: 192.168.1.50'.
+# If this is set and cookie_ip_check is enabled, requests containing this
+# header will have the client (connection) IP checked against the list
+# defined in the trusted_proxy_list. If there is a match, the cookie
+# will be set with the actual client IP contained in the header. If
+# there is no match, the behavior depends on the value of
+# trusted_proxy_strict_mode.
+# 
+# Allowed Value:
+#   Name of a proxy request header which forwards client IP addresses.
+# 
+# Example:
+#   cleartrust.agent.trusted_proxy_header_name=x-forwarded-for
+#
+cleartrust.agent.trusted_proxy_header_name=
+
+
+# Specifies the range of IP addresses or list of hosts to be identified
+# as trusted proxies. If cookie_ip_check is enabled, requests are from one
+# of these hosts, and they contain a header as specified in
+# trusted_proxy_header_name, this header IP will be set in the cookie when
+# the client authenticates. The proxies are 'trusted' in the sense that if
+# there was no list to check against, any client could spoof the header
+# with any IP and it would be accepted as the client IP by the Agent.
+# Each host MUST be listed by either an IP address range
+# or a specific IP address.
+# 
+# Allowed Value:
+#   Comma-separated list of host IP address ranges or specific addresses.
+# 
+# Example:
+#   cleartrust.agent.trusted_proxy_list=192.168.1.50-192.168.2.50,172.30.1.34
+#
+cleartrust.agent.trusted_proxy_list=
+
+
+# Specifies behavior if a check against the trusted_proxy_list fails.
+# When enabled, this provides greater security but is less flexible; users
+# behind proxies not registered in the list and that set the same header
+# will not be able to connect. When disabled, this will allow all users to
+# connect but will not enhance security, as the IP address cannot always be
+# trusted. When enabled, this provides more accurate information about those
+# users that do connect through a proxy on the trusted list.
+# 
+# Allowed Values:
+#   True     Clients failing the check are denied access.
+#   False    The Agent reverts to the standard behavior of using the
+#            connection IP in the cookie. Sites on the public Internet should
+#            set this to False.
+#
+cleartrust.agent.trusted_proxy_strict_mode=False
+
+
+# Specifies the name of the RSA ClearTrust SSO cookie. When single sign-on
+# (SSO) is enabled, the Agent creates a cookie and sets it in the browser.
+# 
+# Allowed Values:
+#   Any string with no spaces or special characters.
+# 
+# Dependencies:
+#   1) If SSO is enabled, all web servers participating in SSO must use the
+#       same cookie name.
+#   2) To enable backward compatibility with RSA ClearTrust 4.6.1 Agents, set
+#       the cookie name to 'ctrust-session-v002d' and parameter
+#       'cleartrust.aserver.token_version=0' in the aserver.conf.
+#
+cleartrust.agent.cookie_name=C1_ABC
+
+
+# Sets the amount of time the Agent will wait before updating the cookie for an
+# authenticated user. The Agent will not reissue an SSO cookie for subsequent
+# requests within this timeframe, provided nothing has changed in the cookie
+# and the user is not required to re-authenticate. This will reduce the
+# processing time required for such requests.
+# 
+# Allowed Values:
+#   Any positive integer followed by Secs (seconds), Mins (minutes), or Hrs
+#   (hours).
+# 
+# NOTE:
+#   Increasing this value has one minor security implication: the idle timeout
+#   (see idle_timeout) is shortened by the amount of time specified here.
+#
+cleartrust.agent.cookie_touch_window=30 Secs
+
+
+# Allows more flexible IP matching in the cookie, especially in reverse-proxy
+# environments.
+# 
+# Allowed Values:
+#   True     The client IP addresses are allowed to vary by the last octet
+#            while remaining valid.
+#   False    Strict IP address checking is enforced.
+# 
+# Dependencies:
+#   This parameter only applies if .cookie_ip_check is enabled.
+#
+cleartrust.agent.allow_subnet_masking=False
+
+
+# Specifies the list of host IP addresses that are allowed to act as proxies
+# and forward cookies to this server. Requests from hosts on this list are not
+# subject to IP address checks.
+# 
+# Allowed Values:
+#   A comma-separated list of IP addresses. Each host MUST be listed by
+#   IP address. Sub-networks may be specified by leaving the last octets empty.
+#   For example, to exclude all addresses starting with '192.168' specify
+#   '192.168.'.
+# 
+# Dependencies:
+#   This parameter only applies if .cookie_ip_check is enabled.
+# 
+# Example:
+#   cleartrust.agent.ip_check_exclusion_list=205.181.76.22
+#
+cleartrust.agent.ip_check_exclusion_list=
+
+
+# Specifies the list of hosts that should not be issued cookies; typically used
+# in proxy/portal environments where both the proxy and the content servers
+# are protected by RSA ClearTrust. This allows the content server to suppress
+# generating a duplicate cookie, as the proxy has already performed this task.
+# 
+# Allowed Values:
+#   A comma-separated list. Each host MUST be listed by IP address. Sub-
+#   networks may be specified by leaving the last octets empty. For example,
+#   to exclude all addresses starting with '192.168' specify '192.168.'.
+# 
+# Dependencies:
+#   This parameter applies only if cookie_ip_check=True.
+# 
+# Example:
+#   cleartrust.agent.cookie_exclusion_list=205.181.76.22
+#
+cleartrust.agent.cookie_exclusion_list=
+
+
+# Specifies a list of ports, requests made to which will never have a cookie
+# issued as part of the response. This may be necessary in environments using
+# complicated proxy configurations, especially when this configuration reduces
+# the effectiveness of other Agent cookie security features.
+# 
+# Allowed Values:
+#   A comma-separated list of port numbers.
+# 
+# Example:
+#   cleartrust.agent.cookie_port_exclusion_list=80,81
+#
+cleartrust.agent.cookie_port_exclusion_list=
+
+
+# Specifies whether the cookies given to the browser can be accessible from
+# client side scripts. If "HttpOnly" attribute is included, cookies that are
+# presented as a part of http requests will not be available to client side
+# scripts.Purpose of this attribute is to mitigate Cross-site Scripting.
+# "HttpOnly" attribute is currently supported only in Internet explorer 6
+# SP1 and above.
+# 
+#  Allowed Values:
+#    True     HttpOnly is included in the cookie.
+#    False    HttpOnly is not included in the cookie.
+# 
+#  Default Value:
+#    False
+#
+cleartrust.agent.httponly=True
+
+
+# This parameter defines what HTTP request headers should be exported
+# by the agent, and under what names.  The value should be a comma
+# separated list of mappings from the header names listed below to
+# the header name(s) to be set.
+# 
+# Multiple names for the same header value should be separated by "+".
+# A header that is mapped to an empty list will not be exported.
+# Only headers present in the list will be changed from their default
+# values.
+# 
+# Default Values:
+#  ct-session-init-time       = ct-session-init-time + sc-session-init-time
+#  ct-session-expiration-time = ct-session-expiration-time + sc-session-expiration-time
+#  ct-last-touch-time         = ct-last-touch-time + sc-last-touch-time
+#  ct-cookie-user-buffer      = sc-cookie-user-buffer + sc-cookie-user-buffer
+#  ct-remote-user             = ct-remote-user
+#  ct-auth-type               = ct-auth-type
+#  ct-web-svr-id              = ct-web-svr-id
+#  ct-sd-sys-id               = ct-sd-sys-id
+#  ct-user-properties-list    = ct_user_properties_list
+#  ct-ext-result              =
+#  ct-ext-result-cleartext    =
+# 
+# Example:
+#    cleartrust.agent.exported_headers= \
+#         ct-remote-user= x-user + y-user, \
+#         ct-session-init-time=, \
+#         ct-cookie-user-buffer= x-buffer
+# 
+#   The above will cause the user name to be published into the headers
+#   "y-user" and "x-user", prevent the session init time from being
+#   published at all, and store the user buffer from the cookie in the
+#   "x-buffer" header.  All other values will be published according
+#   to the default list.
+#
+cleartrust.agent.exported_headers=\
+                 ct-session-init-time       = ct-session-init-time + \
+                                              sc-session-init-time, \
+                 ct-session-expiration-time = ct-session-expiration-time +\
+                                              sc-session-expiration-time, \
+                 ct-last-touch-time         = ct-last-touch-time + \
+                                              sc-last-touch-time, \
+                 ct-cookie-user-buffer      = sc-cookie-user-buffer +\
+                                              sc-cookie-user-buffer, \
+                 ct-remote-user             = ct-remote-user, \
+                 ct-auth-type               = ct-auth-type, \
+                 ct-web-svr-id              = ct-web-svr-id, \
+                 ct-sd-sys-id               = ct-sd-sys-id, \
+                 ct-user-properties-list    = ct_user_properties_list, \
+                 ct-ext-result              = ,\
+                 ct-ext-result-cleartext    =
+
+
+# Specifies whether the headers should be published only for protected
+#  resources or for all resources.
+# 
+# Allowed Values:
+#   True     Headers are published only for protected resources.
+# 
+#   False    Headers are published for all resources.
+# 
+# Default Value:
+#   False
+#
+cleartrust.agent.export_headers_for_protected_resources_only=False
+
+
+# Specifies the list of custom user properties that can be set as HTTP
+# headers after successful user authentication corresponding to
+# AuthN. For AuthZ, all the exportable user properties associated with
+# the application will be published; this list will not be consulted.
+# 
+# Allowed Values:
+#   A comma-separated list of custom user properties. Property definitions can
+#   be created using the RSA ClearTrust Administrative API or Entitlements
+#   Manager.
+# 
+# NOTE:
+#   The property definition(s) should be marked as 'Publishable'.
+#   If wildcard is used (cleartrust.agent.userprops=*), all
+#   publishable user properties will be published as HTTP headers. Property
+#   definition(s) are case sensitive.
+# 
+# Example:
+#   cleartrust.agent.userprops=title,telephoneNumber
+#
+cleartrust.agent.userprops=*
+
+
+# Indicates at what level the specified custom user properties will
+# bepublished.
+# 
+# Allowed Values:
+#   AuthN, AuthZ, or empty if no user properties are defined in
+#   cleartrust.agent.userprops.  AuthN is based on authentication. That
+#   is, as long as the user is successfully authenticated, regardless of
+#   his or her entitlements, the Agent will publish the specified custom
+#   user properties. AuthZ is based on authorization. That is, the user
+#   must successfully be authenticated and also must have entitlements
+#   for accessing the resource.
+# 
+# NOTE:
+#   For AuthN, all 'Publishable' user properties defined in
+#   cleartrust.agent.userprops will be published. For AuthZ, all the
+#   'Publishable' user properties associated with the application will
+#   be published.
+# 
+# Example:
+#   cleartrust.agent.userprops_level=AuthZ
+#
+cleartrust.agent.userprops_level=AuthN
+
+
+# Indicates in what format the multi-valued user properties will be
+# published to the HTTP header.
+# 
+# Allowed Values:
+# 
+#   True     A multi-value user property will be published to the HTTP
+#            header in the following format: OfficeID=XXX,YYY,ZZZ (all
+#            values of the attribute are published as one header, but
+#            separated by commas)
+# 
+#   False    The multi-valued user property will be published as:
+#            OfficeID1=XXX,OfficeID2=YYY,OfficeID3=ZZZ (each value is
+#            published separately, but uniquely identified)
+# 
+# NOTE:
+#   If cleartrust.agent.one_userprops_header=True, then this parameter
+#   must be set to 'False'. A list of custom user properties containing
+#   a multi-valued custom user property will be formatted with unique
+#   property names for each value.  For example,
+#   'LastName=A,OfficeID1=XXX,OfficeID2=YYY,OfficeID3=ZZZ,Title=QA'.
+# 
+# Example:
+#         cleartrust.agent.multivalue_userprops_oneset= False
+#
+cleartrust.agent.multivalue_userprops_oneset=True
+
+
+# Allows publishing many user property name/value pairs under one HTTP header.
+# Some web/proxy servers do not like applications to set too many headers; in
+# these cases, 'HTTP 413 Request Entity Too Large' errors are returned to the
+# browser in response to requests. Setting this parameter can cure the problem.
+# The HTTP header containing all properties is named 'ct_user_properties_list'.
+# 
+# Allowed Values:
+#   True     All user properties are published under one HTTP header,
+#            separated by a comma (name, value).
+#   False    Properties are published as separate headers. This is required if
+#            any of the user properties are multi-valued or contain a ',',
+#            Otherwise, the order of name/value pairs will not be preserved.
+# 
+# An output example for the case of one_userprops_header=True:
+#   ct_user_properties_list=phonenumber,415-235-5842,title,Mr,surname,foobar
+#
+cleartrust.agent.one_userprops_header=False
+
+
+# Specifies whether to publish CT_REMOTE_USER from the user header list
+# even if the user has not successfully authenticated.
+# 
+# Allowed Values:
+#   True     Headers are published only if the user has successfully
+#            authenticated with at least one of the supported authentication
+#            types.
+#   False    HTTP headers for the user will be published if the user
+#            authentication is not successful because the user logged out,
+#            password expired or account locked.
+# 
+# Note:   In order to export http headers an SSO cookie must be present.
+# If you wish to set this value to false you must also set
+# cleartrust.agent.strict_cookie_set to false
+#
+cleartrust.agent.strict_headers_export=False
+
+
+#  Specifies whether to set the CTSESSION single sign on cookie
+# even if the user has not successfully authenticated.
+# 
+# Warning: Setting CTSESSION cookie for unauthenticated users
+# may expose information that can be used to identify valid accounts.
+# 
+# Allowed Values:
+#     True   SSO cookie is set only if the user has successfully
+#            authenticated with at least one of the supported authentication
+#            types.
+#     False  SSO cookie will be set even if the user authentication
+#            is not successful because the user password expired,
+#            or account locked.
+# 
+# Note:  The SSO cookie is always set for user logged out regardless
+# of this setting.
+#
+cleartrust.agent.strict_cookie_set=False
+
+
+# Sets the level used when copying output generated by calls to the
+#  ct_print() WAX API function, in addition to any output normally
+#  generated by that function.
+# 
+#  The parameter cleartrust.agent.log_level controls whether the calls
+#  will actually result in data being logged or not.
+# 
+#  Allowed Values:
+#    None
+#          - Disables logging of ct_print() calls.
+# 
+#    Config, Misconfig, Critical, Error, Warning, Security, Info,
+#    Debug, Massive
+# 
+#          - Sends data to the agent log at the specified level, if
+#            enabled by cleartrust.agent.log_level.
+# 
+#  Default Value:  None
+#
+cleartrust.agent.ct_print_log_level=Error
+
+
+# Specifies whether form-based authentication is enabled. If enabled,
+# unauthenticated users are redirected to a form when authentication is
+# required. Users without the proper entitlements to access the requested
+# resource are redirected to an access denied form.
+# If disabled, the web browser native authentication dialog is presented.
+# Users who do not have access privileges are issued an HTTP 404 - File Not
+# Found response.
+# 
+# Allowed Values:
+#   True     Login form pages are used for authentication.
+#   False    Web browser native authentication dialog is used.
+# 
+# Dependencies:
+#   Single sign-on must also be enabled by setting sso to True. You must also
+#   set the correct login form location parameters (all begin with login_).
+#
+cleartrust.agent.form_based_enabled=True
+
+
+# Indicates whether forms are processed internally or externally. If
+# set to 'True', the Agent will not perform special processing of POST
+# requests to login forms, and the requested page (typically an ASP or
+# JSP file that is using the RSA ClearTrust Runtime API) must process
+# the POST and authenticate the user. When set to 'False', the request
+# is handled internally by the Agent.
+# 
+# Allowed Values:
+#   True
+#   False
+#
+cleartrust.agent.externalize_forms=False
+
+
+# Indicates whether URL retention is enabled. When enabled, the user is
+# redirected back to the original URL once authentication is complete.
+# 
+# Allowed Values:
+#   True     Enabled
+#   False    Disabled
+# 
+# Dependencies:
+#   Used only if form_based_enabled=True.
+#
+cleartrust.agent.retain_url=True
+
+
+# Indicates whether agent uses relative or full URL when redirecting user back
+# to original page. Relative url is required in some proxy environment for
+# url retention.
+# 
+# Allowed Values:
+#   True     Enabled
+#   False    Disabled
+# 
+# Dependencies:
+#   Used only if cleartrust.agent.retain_url is set to True,
+#
+cleartrust.agent.retain_url.use_full_url=True
+
+
+# Indicates whether the ct_orig_uri query string parameter will be set with
+# a relative or full URL value during login.
+# 
+# ct_orig_uri exists in this Agent version to provide backward compatibility
+# with 3.0.x Agent behavior. New applications should use the CT_ORIG_URL
+# parameter in order to ensure future compatibility. Note that .use_full_url
+# is used to set this behavior for CT_ORIG_URL only.
+# 
+# Allowed Values:
+#   True     The full URL will be set in the query string parameter.
+#   False    A relative URL will be set.
+# 
+# Default Value:
+#   False
+# 
+# Dependencies:
+#   Used only if both cleartrust.agent.retain_url and .use_query_string are
+#   set to True.
+#
+cleartrust.agent.retain_url.use_full_url_for_ct_orig_uri=False
+
+
+# Indicates how the Agent stores the original URL during URL
+# retention. If set to True, the original URL will be appended as a query
+# string to each login form URL during authentication. If set to False, a
+# temporary cookie will be used instead.
+# 
+# Allowed Values:
+#   True     The original URL is stored in the query string.
+#   False    The original URL is stored in a cookie.
+# 
+# Dependencies:
+#   Used only if cleartrust.agent.retain_url is set to True.
+#   When this parameter is set to True, the following properties should
+#   be modified to use the jsp or asp versions of the forms:
+#      1. cleartrust.agent.login_home_location
+#      2. cleartrust.agent.login_form_location_*
+#      3. cleartrust.agent.login_error_user_location_*
+#      4. cleartrust.agent.login_error_pw_location_*
+#   Refer the default configuration of the parameter
+#   cleartrust.agent.login_error_location_securid for an example.
+#
+cleartrust.agent.retain_url.use_query_string=False
+
+
+# Indicates how the Agent handles URLs which may contain encoded characters
+# during URL retention. If set to True, any encoded characters in the original
+# URL will be preserved through the process of authentication and redirection.
+# 
+# Allowed Values:
+#   True     Encoded characters are preserved.
+#   False    Encoded characters are not preserved. This is to preserve
+#            backwards compatibility with the behavior of older Agents.
+# 
+# Recommended Value:
+#   True
+# 
+# Dependencies:
+#   Used only if cleartrust.agent.retain_url is set to True
+#
+cleartrust.agent.retain_url.preserve_query_string=True
+
+
+# Specifies whether to include both ct_orig_uri and CT_ORIG_URL in the query
+# string during query string based URL retention. In mixed environments
+# (where this agent coexist with 3.0.x agents), either ct_orig_uri or
+# both can be included in the query string. This can be done to avoid lengthy
+# URL's.
+# 
+# Allowed Values:
+#   ct_orig_uri    Include only ct_orig_uri in the query string
+#   CT_ORIG_URL    Include only CT_ORIG_URL in the query string
+#   Both           Include both ct_orig_uri and CT_ORIG_URL in the query string
+# 
+# Default Value:
+#   Both
+# 
+# Dependencies:
+#     Used only if both cleartrust.agent.retain_url and .use_query_string are
+#     set to True.
+#
+cleartrust.agent.retain_url.use_parameter=Both
+
+
+# Indicates where the user should be redirected after successful
+# authentication.
+# 
+# Allowed Values:
+# 
+#   Mode1      Users will be redirected directly to the original page after
+#              successful  authentication.
+# 
+#   Mode2      Users will be redirected to the login_home_location.
+# 
+#   Mode3      Agent uses ct_home.asp|jsp to redirect user to the original
+#              URL for both Cookie based and Query based URL Retention.
+# 
+# Dependencies:
+#    Used only if cleartrust.agent.retain_url is set to True
+# 
+# Default Value:
+#     Mode1 
+#
+cleartrust.agent.retain_url.redirect_to_ct_home=Mode1
+
+
+# Indicates whether port number should be included in the retained url.
+# This applies to both cookie based url retention and query-string based url
+# retention.
+# 
+# Allowed Values:
+#    True   Port number would be excluded in retain url.
+#    False Port number would be included in retain url.
+# 
+# Default value :
+#     False
+# 
+#
+cleartrust.agent.exclude_port_for_retained_url=False
+
+
+# Specifies the realm name used in HTTP authorization headers.
+# 
+# Allowed Values:
+#   Any string, no spaces or special characters.
+# 
+# Dependencies:
+#   1) This parameter is used only if form_based_enabled is set to False.
+#   2) If configuring multiple web servers for RSA ClearTrust, use the same
+#      HTTP realm name.
+#
+cleartrust.agent.realm=CT
+
+
+# Tells the Agent to ignore the user credential in HTTP-Authorization
+# headers.  If it is set to false, then CT Agent will parse the user
+# credential in HTTP-Authorization headers; thus, user could bypass the
+# CT login page. When it is set to true, then it disables the processing
+# of credential sent in HTTP-Authorization header when form-based
+# authentication is used. This can be used to prevent users from
+# bypassing form logins.
+# 
+# Allowed Values:
+#   True     Ignore the user credential in HTTP authorization headers.
+#   False    Allow CT Agent to use the user credential in HTTP
+#            authorization headers.
+# 
+# Dependencies:
+#   Used only if form_based_enabled=True.
+#
+cleartrust.agent.ignore_http_auth=False
+
+
+# Enforces how the value of HTTP basic authorization header is set. If it is
+# set to false, then CT Agent will set the HTTP basic authorization header to
+# 'user:'. If it is set to true, CT Agent sets the basic authorization header
+# to different values as illustrated in the following table:
+# 
+# |-----------------------------------------------------------------------|
+# |                       |CT cookie:             |CT cookie:             |
+# |                       |Valid                  |Invalid/not exists     |
+# |-----------------------------------------------------------------------|
+# |Basic authorization    |Result:                |Result:                |
+# |header is good         |Basic authorization    |Basic authorization    |
+# |                       |header is set to       |header is set to       |
+# |                       | 'user:(null)'.        | 'user:(null)'.        |
+# |-----------------------------------------------------------------------|
+# |Basic authoriztion     |Result:                |Result:                |
+# |header is invalid or   |Basic authorization    |Basic authorization    |
+# |not exists             |header is set to       |header is set to       |
+# |                       | 'user:'.              | 'user:'.              |
+# |-----------------------------------------------------------------------|
+# 
+# 
+# 
+# Allowed Values:
+#   True     Set the HTTP basic authorzation header according to the above
+#            table.
+#   False    Set the HTTP basic authorization header to 'user:'.
+# 
+# 
+#
+cleartrust.agent.auth_header_with_value_null=True
+
+
+# This either allows or blocks the setting of the basic authorization
+# header 'Authorization:'.This parameter can be set to false in places
+# where the Authorization header set by Agent is not required.
+# By default,this would be set to True.
+# 
+# Allowed Values:
+# True     Sets the HTTP basic authorzation header with values.
+# 
+# False    The HTTP Basic Authorization header will not be set.
+# 
+#
+cleartrust.agent.set_basic_auth_header=True
+
+
+# Specifies the shared secret generated by the keygen utility.
+# This is used for SSO into Microsoft applications.
+# 
+# In an SSO web farm environment, non-IIS web servers need to specify the
+# same shared secret as the one specified in the IIS web server where a
+# password is required to SSO into Microsoft applications.
+# 
+# Allowed Values:
+#    The text string generated by the keygen utility for this web server.
+# 
+# Example:
+#    cleartrust.agent.shared_secret=mC8qtB+7qBpyuS47D1t9JpcM7F01x5cwydLRxUujn8Bk
+# 
+# Dependencies:
+#   This parameter must be set if :
+#    1. Web agent is configured to use password replay to SSO into MS
+#       applications.
+#    2. Web agent is configured to use Protocol Transition to SSO into MS
+#       applications.
+#
+cleartrust.agent.shared_secret=
+
+
+# Specifies the list of custom authentications handled by the authorization
+# server. If no custom authentications are configured, this property can
+# be left empty. The name of the custom authentication should be the same as
+# the value returned by the 'getAuthenticationType' method in the custom
+# authentication class. The values configured for this property can be
+# used in the auth_resource_list and auth_type_mapping properties. This
+# property has no affect on WAX custom authentication.
+# 
+# Example:
+#     cleartrust.agent.custom_auth=SampleAuth,MyAuthentication
+# 
+# NOTE: The value for this parameter is case sensitive.
+#
+cleartrust.agent.custom_auth=
+
+
+# Supplies the list of URLs and authentication methods required.
+# 
+# Allowed Values:
+#   1) Empty value is not allowed for this property. Each entry in the
+#      list is specified in the form /path=authtype[(:|+)authtype].
+# 
+#   2) Paths may be specified as an individual URL (/index.html ), or as a
+#      pattern matching a directory prefix ( /webapps/* ).
+# 
+#   3) Multiple authentication types may be specified for each URL and joined
+#      with either OR or AND semantics, using the separators ':' or '+'
+#      respectively. For example:
+# 
+#      - NT:BASIC specifies that either Windows NT or Basic authentication is
+#        sufficient.
+# 
+#      - NT+BASIC indicates that both types must be satisfied before access is
+#        granted.
+# 
+#      It is important to note that '+' operators take precedence over
+#      ':' operators.
+# 
+#   4) Combinations of ORs and ANDs are allowed, such as
+#      SECURID:CERTIFICATE+BASIC. In this example, RSA SecurID by itself is
+#      sufficient, or a combination of both Certificate and Basic
+#      authentication is required. If you want to specify Certificate
+#      and either Windows NT or Basic, enter NT+CERTIFICATE:CERTIFICATE+BASIC.
+#      In most cases the OR operator can only be used to chain together similar
+#      authentication types. For example, Basic, NT, and SecurID
+#      which all require a username and credential combination can be chained
+#      together. There is the special case of BASIC:CERTIFICATE which is
+#      allowed.
+# 
+#      The OR operation serves two purposes, as explained in the following
+#      example:
+# 
+#      cleartrust.agent.auth_resource_list=/HR/*=BASIC:NT
+# 
+#      First, OR determines which authentication type(s) are sufficient for
+#      proving the user's identity. If the user has already successfully
+#      authenticated with either Basic or NT, the user's identity is
+#      valid. If the user has not already authenticated, challenge the user
+#      with BASIC authentication.
+# 
+#      Second, using OR provides a list of authentication types that can be
+#      attempted for an unauthenticated user. If user authentication fails with
+#      the first authentication type, should the same credentials be used to
+#      attempt authentication against the next allowable type? This is
+#      determined by the attempt_multiple_authentications parameter.
+# 
+#      If attempt_multiple_authentications=True, the Agent uses the same
+#      credentials to perform authentication against the next allowable type.
+#      In most cases, only similar authentication types are allowed, such as
+#      Windows NT, Basic, and RSA SecurID.Certificate authentication cannot
+#      be combined with other authentication types if Certificate is the
+#      first authentication type (CERTIFICATE:NT and CERTIFICATE+BASIC:NT
+#      are incorrect). However, Certificate authentication can be combined
+#      with other authentication types and both Certificate then the other
+#      authentication type is attempted(BASIC:CERTIFICATE).
+# 
+#      If attempt_multiple_authentications=False, the user is denied access
+#      or is re-challenged with the first authentication type.
+# 
+#   5) Multiple path/authentication type entries may be specified, separated by
+#      commas. During resource checks, the most specific match is applied to
+#      the resource.
+# 
+#   6) For resources that should be protected by WAX custom authentication, use
+#      'CUSTOM' as the auth_type. For resources that should be protected with
+#      custom authentications implemented in the authorization server, set the
+#      auth_type to the name of the authentication type. For example:
+#      /myapp/*=SampleAuthentication.
+# 
+#   7) The NTLM authentication type cannot be used in the IIS Agent. NTLM
+#      authentication in non-IIS server Agents is handled by the authorization
+#      server, whereas The IWA authentication type, which represents three
+#      Windows authentication types (NTLM/KERBEROS/CERTIFICATE MAPPING), should
+#      be used in IIS server Agents as an alternative to the NTLM
+#      authentication type. NTLM cannot be the first authentication type when
+#      multiple authentication types are specified.
+# 
+#   8) Combination of IWA and CERTIFICATE authentication types is not
+#      supported.
+# 
+#   9) Combination of AA with the following are not allowed:
+#          [A] IWA
+#          [B] NTLM
+#          [C] CERTIFICATE
+#      Hence, these authentication types can not be configured for
+#      cleartrust.agent.auth_resource_list when cleartrust.agent.aa.enabled
+#      is set to 'True'.
+# 
+#  10) Whenever AA is a part of authentication method list, it should always
+#      be configured as the first entry.
+#          For example,
+#            cleartrust.agent.auth_resource_list =/*= NT+AA+SECURID
+#          will not be considered as a correct configuration; rather it
+#          should be configured as
+#            cleartrust.agent.auth_resource_list =/*= AA+NT+SECURID
+#          Similarly, cleartrust.agent.auth_resource_list =/*= AA:NT:SECURID
+#          not cleartrust.agent.auth_resource_list =/*= NT:AA:SECURID
+# 
+# Dependencies:
+#   Resources not specified by this parameter will default to the
+#   authentication type set by default_auth_mode. If you are combining
+#   multiple authentication types using AND/OR operators, set
+#   form_based_enabled=True and retain_url=True.
+# 
+# Example:
+#   cleartrust.agent.auth_resource_list=/*=BASIC:SECURID,/finance/*=SECURID
+#
+cleartrust.agent.auth_resource_list=/*=BASIC
+
+
+# Specifies whether the Adaptive Authentication is enabled or not.
+# 
+# Allowed Values:
+#   True     Adaptive Authentication is enabled.
+#   False    Adaptive Authentication is disabled.
+# 
+# Note:
+#   If this parameter is configured to 'False', enabling/disabling of
+#   Adaptive Authentication is decided by the configured authentication
+#   types in cleartrust.agent.auth_resource_list and
+#   cleartrust.agent.default_auth_mode.
+# 
+# Default Value:
+#   False
+#
+cleartrust.agent.aa.enabled=False
+
+
+# Specifies the default authentication type for resources not defined in the
+# 'auth_resource_list' parameter. If a URL does not match with the URLs
+# specified in the authentication resource list, the value specified
+# by this parameter is used as the authentication mechanism.
+# 
+# Allowed Values:
+#   AA
+#   BASIC
+#   NT
+#   SECURID
+#   CERTIFICATE
+#   CUSTOM
+#   IWA
+#   NTLM (Except for IIS.  See description for auth_resource_list.)
+#   Note:
+#   If cleartrust.agent.aa.enabled is set to 'True', this parameter can not
+#   be configured with the following authentication types:
+#   [A]. IWA
+#   [B]. NTLM
+#   [C]. CERTIFICATE
+# 
+# Dependencies:
+#   The resources specified in auth_resource_list are evaluated first.
+#
+cleartrust.agent.default_auth_mode=BASIC
+
+
+# Sets internal authentication type chaining when using the OR operator to
+# combine multiple authentication types. Normally, when credentials are
+# submitted to the Agent, only one authentication type is tried. If
+# authentication fails, the user is rechallenged for the same credentials.
+# 
+# If this parameter is enabled, before rechallenging the user, all other
+# allowed authentication types for the resource are tried using the same
+# credentials. This is primarily used when migrating users from one
+# authentication type to another, such as switching from Windows NT to Basic.
+# Users then do not need to know which credential they are submitting, or when
+# their account has been moved, as the Agent will handle both types internally.
+# 
+# NOTE:
+#   This has a side effect of introducing false negatives into authentication
+#   logs.
+# 
+# Allowed Values:
+#   True
+#   False
+# 
+# Dependencies:
+#   Set this value to 'True' if you are using more than one authentication type
+#   in auth_resource_list and you are using the OR operator.
+#
+cleartrust.agent.attempt_multiple_authentications=False
+
+
+# Specifies any necessary mapping (translation) of certificate DN string
+# attribute names using a comma separated list of 'from:to' mapping pairs.
+# For example, the data store uses 'E' for email address and 'S' for state
+# or province name. However, the Web server produces DN strings which use
+# 'EMAIL' or 'MAIL' for email address and 'ST' for state or province name.
+# This parameter defines mapping the server's DN attribute name to ones
+# used in the data store.The mapping can also be applied when the Web server
+# produces an OID string rather than a name string.
+# 
+# Allowed Values:
+#   A comma-separated list of certificate DN name mapping pairs.
+# NOTE:
+#   Each 'from' name must be unique, but multiple 'from' names can be
+#   mapped to a single 'to' name (a many-to-one relationship).The entry
+#   values are case-insensitive.
+# Example:
+#   cleartrust.agent.certdn_attr_name_map=EMAIL:E,MAIL:E,1.2.840.113549.1.9.1:E,ST:S
+#
+cleartrust.agent.certdn_attr_name_map=
+
+
+# Sets the order in which to read DN attributes from user certificates. These
+# attributes may be in reverse order, for example 'C=US,ST=California,L=San
+# Francisco...'. In order for Certificate authentication to work properly in
+# this case, the attributes must be reversed to match the certificate DN value
+# configured in the RSA ClearTrust data store.
+# 
+# Allowed Values:
+#   True     Reverse the DN order.
+#   False    Keep the DN order as is.
+#
+cleartrust.agent.reverse_certificate_dn=False
+
+
+# Sets the delimiter used to separate user certificate DN attributes.
+# Attributes may be delimited with '/' instead of the usual comma ','. In order
+# for certificate authentication to work properly in this case, the delimiter
+# must be converted to ',' to match the certificate DN value configured in the
+# RSA ClearTrust data store.
+# 
+# Allowed Values:
+#   True     Convert the DN delimiter from '/' to ','.
+#   False    Leave the DN delimiter as is.
+#
+cleartrust.agent.convert_certificate_dn_delimiter=False
+
+
+# Sets the default language to be used if the client browser does not
+# send an 'Accept-Language', or if there is no match between the
+# 'Accept-Language' header value and the list of accepted languages (refer
+# to accepted_languages_list).
+# 
+# Allowed Values:
+#   en    English is the only supported language at this time.
+#
+cleartrust.agent.default_language=en
+
+
+# Specifies the accepted languages list. For every HTTP request, the
+# 'Accept-Language' header is read to identify the client browser accepted
+# languages list. The list is compared with the values specified for the
+# following parameter. If there is a match, the matched language is
+# selected as the language used for the request. If there is no match or the
+# client browser does not send an 'Accept-Language' header, the default
+# language is used (as specified by default_language). The <%%language%> tag
+# in the login pages is replaced with the identified language string
+# (examples: en, jp, en-us).
+# 
+# Allowed Values:
+#   A comma-separated list of language prefixes for which the login pages are
+#   configured.
+# 
+# NOTE:
+#   English is the only supported language at this time.
+# 
+# Example:
+#   cleartrust.agent.accepted_languages_list=en
+#
+cleartrust.agent.accepted_languages_list=
+
+
+# Specifies a list of URLs to include for access control checks.
+# 
+# NOTE:
+#   For URLs that have space characters, the space characters should be
+#   replaced by %20. For example:
+#   cleartrust.agent.url_inclusion_list=/inclusion/the%20page.html
+# 
+# Allowed Values:
+#   A comma-separated list of URLs.
+# 
+# Example:
+#    cleartrust.agent.url_inclusion_list=/incl_dir1/*,/incl_dir2/*
+# 
+# !!WARNING!!
+# If this parameter is defined, then only those URLs would be considered for
+# protection. If this parameter is not defined, then Authorization Server
+# is contacted to check the protection status of the incoming URL.
+# 
+#
+cleartrust.agent.url_inclusion_list=
+
+
+# Specifies a list of URLs that will be excluded from access control checks.
+# There is no need to specify the login forms here. They are automatically
+# included in this list by the Agent.
+# 
+# NOTE:
+#   (1).URLs excluded using '.extension_exclusion_list' are not required to be
+#   excluded here.
+#   (2).For URLs that have space characters, the space characters should be
+#   replaced by %20. For example:
+#   cleartrust.agent.url_exclusion_list=/exclusion/the%20page.html
+# 
+# 
+# Allowed Values:
+#   A comma-separated list of URLs.
+# 
+# Example:
+#   cleartrust.agent.url_exclusion_list=/images/*
+# 
+# 
+#
+cleartrust.agent.url_exclusion_list=
+
+
+# Specifies a list of file extensions. URLs ending with these file extensions
+# are excluded from access control checks. URLs excluded using
+# '.url_exclusion_list' are not required to be excluded here.
+# 
+# SECURITY NOTE:
+#   RSA Security does not recommend the use of this legacy parameter and
+#   strongly recommends using rules.xml instead to specify more specific URL
+#   patterns to be excluded from access control checks. Use of this parameter
+#   may allow any URL ending with specified extensions there by exposing a lot
+#   of unplanned URL name space getting excluded from Access checks which may
+#   be exposed to web server's URL exploits. Please refer to parameter
+#   cleartrust.agent.rules_file for rules.xml usage.
+# 
+# Allowed Values:
+#   A comma-separated list of file extensions.
+# 
+# Example:
+#    cleartrust.agent.extension_exclusion_list=gif,jpg
+#
+cleartrust.agent.extension_exclusion_list=gif,jpg,png,css,js,swf,html
+
+
+# (Apache only).  A comma-separated list of authentication realms
+# (as configured with the AuthName directive) where the request should
+# be passed on to other authentication modules (such as mod_auth)
+# after ClearTrust has allowed the request.
+# 
+# Each element of the list is the name of a realm.  A trailing '*'
+# is allowed as a wildcard.  Realms that should not be passed on
+# can be indicated with a leading '!'.
+# 
+# If there is no matching entry in the list, ClearTrust handles all
+# authentication for virtual hosts where the agent is enabled (this is
+# equivalent to a list containing only '!*')
+# 
+# It is imperative that any forms used by cleartrust are authenticated
+# only by ClearTrust.  The install script normally puts the whole
+# server into the 'CT' realm, so the list should usually begin with
+# '!CT'.
+# 
+# Allowed Values:
+#   A comma-separated list of realms and '!' and '*'.
+# 
+# Example:
+#    .apache.pass_realms=!CT,FOO,F*
+#
+cleartrust.agent.apache.pass_realms=!*
+
+
+# Specifies the path and file location of the page RSA ClearTrust issues after
+# a successful form-based authentication.
+# 
+# All logon pages support various tags. The tags will be replaced with
+# appropriate values dynamically before being send to the client browser.
+# Currently supported tags are:
+# 
+# <%%language%>            - The language for the request
+# <%%user%>                - The user ID associated
+# <%%web_server_name%>     - The web server name for this virtual host
+# <%%cookie_name%>         - The RSA ClearTrust cookie ID
+# <%%cookie_domain%>       - Cookie domain
+# <%%path%>                - Cookie path
+# <%%secure%>              - Cookie secure
+# <%%cookie_expiration%>   - Cookie expiration
+# <%%retain_url%>          - URL retention on/off
+# <%%realm%>               - The realm name
+# <%%default_auth_mode%>   - The authentication mode for the current request
+# <%%ct_orig_url%>         - The original URL requested by the user
+# <%%ct_session%>          - The RSA ClearTrust session
+# <%%ext_result%>          - Extended authorization result (encrypted)
+# <%%ext_result_clear%>    - Extended authorization result (cleartext)
+# 
+# If the tag value is not available (for example: before authentication, the
+# 'user' tag is not available) the tag will be replaced with an empty string.
+# 
+# CTAuthMode and CTLoginErrorMsg tag values will be checked against an array
+# (which will contain a list of possible authentication modes / error codes)
+# at the logon pages. When an exact match is found, the values specified
+# will be used. Else, a default value will be used. The default value is the
+# first item in the arrays. The user can also add custom authentication modes
+# / Error codes at the end of the respective arrays in the logon forms and
+# use these values as custom login / error form parameters.
+# 
+# Allowed Value:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_home_location=/cleartrust/ct_home_<%%language%>.html
+
+
+# Specifies the login form location for IWA authentication.
+# The URL must point to ct_home.asp located under /cleartrust/iwa.
+# 
+# Example:
+#          cleartrust.agent.login_form_location_iwa=http(s)://server:port/cleartrust/iwa/ct_home.asp
+# 
+# Note: The virtual directory /cleartrust/iwa must be configured to use
+# Integrated Windows Authentication in IIS manager. No anonymous access is
+# allowed. The NTFS permission of ct_home.asp in the /cleartrust/iwa directory
+# must be configured to be read by valid Domain users only (assign read
+# permission to Domain Users groups).
+# 
+# You can specify a relative URL for IIS Agents. A complete URL is required for
+# non-IIS Agents.
+#
+cleartrust.agent.login_form_location_iwa=/cleartrust/iwa/ct_home.asp
+
+
+# Specifies the path and file location of the page RSA ClearTrust uses to log
+# out a user and end an RSA ClearTrust session. A request for this URL will
+# result in invalidation of the RSA ClearTrust SSO session.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.logout_form_location=/cleartrust/ct_logout_<%%language%>.html
+
+
+# Specifies the path and file location of the logon page RSA ClearTrust issues
+# for Basic authentication prompts.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_form_location_basic=/cleartrust/ct_logon_<%%language%>.html
+
+
+# Specifies the path and file location of the page RSA ClearTrust issues when a
+# user submits an invalid User ID for Basic authentication. RSA Security
+# recommends using a generic error page to disguise the actual reason for
+# authentication failure from users who may be trying to break in to your web
+# server.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_error_user_location_basic=/cleartrust/ct_logon_failed_<%%language%>.html
+
+
+# Specifies the location of the page RSA ClearTrust issues when a user submits
+# an invalid password for Basic authentication. RSA Security recommends using a
+# generic error page to disguise the actual reason for authentication failure
+# from users who may be trying to break in to your web server.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_error_pw_location_basic=/cleartrust/ct_logon_failed_<%%language%>.html
+
+
+# Specifies the location of the page RSA ClearTrust issues for RSA SecurID
+# authentication prompts. This form collects the RSA SecurID username and
+# passcode used to authenticate against an RSA ACE/Server.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_form_location_securid=/cleartrust/ct_logon.jsp?CTAuthMode=SECURID&language=<%%language%>
+
+
+# Specifies the location of the page RSA ClearTrust issues for RSA SecurID
+# authentication when a user needs to provide the next tokencode. If a user has
+# three failed authentication attempts, this form is displayed. The user must
+# then supply another passcode for verification.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_form_location_sid_nexttoken=/cleartrust/ct_securid.jsp?SecurIdMode=nexttoken&language=<%%language%>
+
+
+# Specifies the location of the page RSA ClearTrust issues for RSA SecurID
+# authentication when a user needs to choose a new PIN (or password). If a user
+# is new and does not have a PIN, or if the administrator forces a PIN change,
+# this form is displayed.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_form_location_sid_newpin=/cleartrust/ct_securid.jsp?SecurIdMode=newpin&language=<%%language%>
+
+
+# Specifies the location of the page RSA ClearTrust issues for RSA SecurID
+# authentication when a user needs to provide a new passcode. This form is
+# presented after the user has selected a new PIN.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_form_location_sid_passcode=/cleartrust/ct_securid.jsp?SecurIdMode=passcode&language=<%%language%>
+
+
+# Specifies the location of the page RSA ClearTrust issues when an error occurs
+# during RSA SecurID authentication.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_error_location_securid=/cleartrust/ct_logon.jsp?CTAuthMode=SECURID&CTLoginErrorMsg=Authentication%20Error&language=<%%language%>
+
+
+# Specifies the location of the page RSA ClearTrust issues for Windows NT
+# authentication. This form is used to collect user credentials for
+# authentication against a Windows NT primary domain controller (PDC).
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_form_location_nt=/cleartrust/ct_logon_nt_<%%language%>.html
+
+
+# Specifies the location of the page RSA ClearTrust issues when an invalid
+# User ID error has occurred during Windows NT authentication. RSA Security
+# recommends using a generic error page to disguise the actual reason for
+# authentication failure from users who may be trying to break in to your
+# web server.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_error_user_location_nt=/cleartrust/ct_logon_failed_nt_<%%language%>.html
+
+
+# Specifies the location of the page RSA ClearTrust issues when an invalid
+# password error has occurred during Windows NT authentication. RSA Security
+# recommends using a generic error page to disguise the actual reason for
+# authentication failure from users who may be trying to break in to your
+# web server.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_error_pw_location_nt=/cleartrust/ct_logon_failed_nt_<%%language%>.html
+
+
+# Specifies the location of the page RSA ClearTrust issues when the Basic
+# user password is expired.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+# 
+# Dependencies:
+#   This form requires server-side processing to update the user password in
+#   the RSA ClearTrust data store. RSA Security provides a sample application
+#   that you can use to help you implement this functionality. See the
+#   RSA ClearTrust Developer's Guide for more information.
+#
+cleartrust.agent.login_error_password_expired=/cleartrust/ct_access_denied_<%%language%>.html
+
+
+# Specifies the location of the page RSA ClearTrust issues when the Basic
+# user password is forced to expire by the administrator.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+# 
+# Dependencies:
+#   This form requires server-side processing to update the user password in
+#   the RSA ClearTrust data store. RSA Security provides a sample application
+#   that you can use to help you implement this functionality. See the
+#   RSA ClearTrust Developer's Guide for more information.
+#
+cleartrust.agent.login_error_password_expired_forced=/cleartrust/ct_access_denied_<%%language%>.html
+
+
+# Specifies the location of the page RSA ClearTrust issues when the user
+# account is new and the Basic user password has not yet been set.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+# 
+# Dependencies:
+#   This form requires server-side processing to update the user password in
+#   the RSA ClearTrust data store. RSA Security provides a sample application
+#   that you can use to help you implement this functionality. See the
+#   RSA ClearTrust Developer's Guide for more information.
+#
+cleartrust.agent.login_error_password_expired_new_user=/cleartrust/ct_access_denied_<%%language%>.html
+
+
+# Specifies the location of the page RSA ClearTrust issues for Custom
+# authentication. This form is used to collect user credentials. Custom
+# authentication requires that you develop a Web Agent eXtension (WAX) program
+# using the RSA ClearTrust WAX API.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_form_location_custom=/cleartrust/ct_logon_custom_<%%language%>.html
+
+
+# Specifies the location of the page RSA ClearTrust issues when an invalid User
+# ID error has occurred during Custom authentication. RSA Security recommends
+# using a generic error page to disguise the actual reason for authentication
+# failure from users who may be trying to break in to your web server.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_error_user_location_custom=/cleartrust/ct_logon_failed_custom_<%%language%>.html
+
+
+# Specifies the location of the page RSA ClearTrust issues when an invalid
+# password error has occurred during Custom authentication. RSA Security
+# recommends using a generic error page to disguise the actual reason for
+# authentication failure from users who may be trying to break in to your
+# web server.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_error_pw_location_custom=/cleartrust/ct_logon_failed_custom_<%%language%>.html
+
+
+# Specifies the location of the page RSA ClearTrust issues when the DN
+# presented by the user certificate does not exist in the backend data store.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_cert_invalid_user=/cleartrust/ct_access_denied_<%%language%>.html
+
+
+# Specifies the location of the page RSA ClearTrust issues when the user
+# account is in an inactive state.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_auth_inactive_account=/cleartrust/ct_access_denied_<%%language%>.html
+
+
+# Specifies the location of the page RSA ClearTrust issues when the user
+# account has expired.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_auth_expired_account=/cleartrust/ct_access_denied_<%%language%>.html
+
+
+# Specifies the location of the page RSA ClearTrust issues when the user
+# account is locked out.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_auth_user_locked_out=/cleartrust/ct_access_denied_<%%language%>.html
+
+
+# Specifies the location of the page RSA ClearTrust issues when the user does
+# not have access to the requested resource.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_auth_url_access_denied=/cleartrust/ct_access_denied_<%%language%>.html
+
+
+# Specifies the location of the page RSA ClearTrust issues when there is an
+# internal error processing a request.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.login_server_error=/cleartrust/ct_access_denied_<%%language%>.html
+
+
+# Specifies the path and file location of the logon page RSA ClearTrust
+# issues when post form data is lost because of idle timeout/Session
+# expiration/logout/token error. This redirection is done while
+# making HTTP POST requests to a specific set of URLs
+# (identified by .post_url_idle_timeout_list).
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document root,
+#   or a full URL to the file.
+#
+cleartrust.agent.post_data_loss_url=/cleartrust/ct_access_denied_<%%language%>.html
+
+
+# Defines the name of a server pool, consisting of a set of connections to
+# RSA ClearTrust Servers. This pool can be shared by multiple virtual servers.
+# 
+# Allowed Values:
+#   The value must correspond to the name of a pool defined in a <Pool> section
+#   in the configuration file.
+# 
+# Dependencies:
+#   1) You must first define the server pool name and associated RSA ClearTrust
+#   Server connection parameters in the block of server pool parameters. The
+#   server pool name is defined in the opening <pool> tag.
+#   2) This parameter MUST have a value set in the global block of parameters,
+#   otherwise the Agent will not start.
+#   3) If using SSO, you must set this parameter to use the same RSA ClearTrust
+#   server pool on any web server participating in SSO with this web server.
+#   SSO requires that the participating web servers use the same RSA ClearTrust
+#   Key Server(s).
+#
+cleartrust.agent.server_pool=__default__
+
+
+# Optional parameter. Specifies the filename for the encrypted store.
+# Sensitive configuration parameters can be stored in a separate, encrypted
+# file. When the Agent starts, it reads these parameters from the store instead
+# of from this configuration file.
+# 
+# To specify that a parameter is defined in the encrypted store instead of
+# webagent.conf, modify each parameter to be encrypted with the format:
+# 
+#     cleartrust.agent.<parameter_name>.cleartext=false
+# 
+# Then, remove the actual parameter and its value from webagent.conf.
+# 
+# Examples:
+#    cleartrust.agent.ssl.keystore_passphrase.cleartext=false
+#    cleartrust.agent.ssl.private_key_passphrase.cleartext=false
+# 
+# NOTE:
+#   When you run the cryptedit tool, it searches webagent.conf for
+#   cleartext=false entries, then displays those parameters to you at the
+#   command prompt so you can set their values. See your Agent Installation
+#   and Configuration Guide for more information on using cryptedit.
+# 
+# Allowed Values:
+#   A file location, relative to the 'conf' directory.
+# 
+# Dependencies:
+#   You must uncomment this parameter in order to use the cryptedit tool.
+#
+#cleartrust.agent.encrypted_store=webagent.sec
+
+
+# The absolute path to the rules file for this Virtual Host. If the file is
+# located in the RSA ClearTrust agent root (CTAgentRoot) conf folder, specify
+# only the file name. For every incoming request the rules are processed and if
+# a rule is matched the specified action(s) is/are taken for the request.
+# 
+# Example:
+#   cleartrust.agent.rules_file=/opt/ctrust/agent/apache/conf/rules.xml
+#
+cleartrust.agent.rules_file=/prod/msp/domains/<%= node['javamsp']['appname']%>_domains/msp_<%= node['javamsp']['appname']%>_apache_01/webservers/Apache_<%= node['rms']['apache_version']%>/conf/rules.xml
+
+
+# Define the mapping between different authentication types.
+# 
+# The syntax is Auth1:Auth2,Auth1:Auth3 to maps Auth1 to Auth2,
+# and Auth1 to Auth3.
+# 
+# For Auth1:Auth2,Auth2:Auth3, ClearTrust agent will implicitly generate
+# the mapping for Auth1 to Auth3.
+# 
+# Values from custom_auth can be used here.  Those authentication type
+# from custom_auth are case sensitive, all others, i.e., 'basic',
+# 'nt', are case insensitive.
+# 
+# The default value is empty, which means no mapping.
+# 
+# Example:
+#   cleartrust.agent.auth_type_mapping=NTLM:NT,myCustom:Basic
+#
+cleartrust.agent.auth_type_mapping=
+
+
+# Optional. Sets an additional amount of time for a session to remain valid
+# when making HTTP POST requests to a specific set of URLs (identified by
+# .post_url_idle_timeout_list). This is over and above the setting of
+# .idle_timeout, and is applicable in a very specific case: say a logged-in
+# user needs to fill out a long form, such that by the time the user is
+# finished and submits it, their session has timed out. At the same time it may
+# be undesirable to increase the general idle_timeout due to security
+# implications.
+# 
+# Setting this parameter to a nonzero value will work around the problem.
+# 
+# Allowed Values:
+#   Any positive integer followed by Secs (seconds), Mins (minutes), or Hrs
+#   (hours). This value will be added to .idle_timeout and the result used
+#   when evaluating session expiration on these particular requests. If set to
+#   zero or unset, .idle_timeout will be used unmodified.
+# 
+# Dependencies:
+#   See .post_url_idle_timeout_list.
+#
+cleartrust.agent.post_url_idle_timeout=0 Secs
+
+
+# Optional. Specifies a list of URLs for which .post_url_idle_timeout applies.
+# 
+# Allowed Values:
+#   A comma-separated list of URLs.
+#   Setting to "/*" will make .post_url_idle_timeout apply to all HTTP POST
+#   requests. If unset, .post_url_idle_timeout will have no effect.
+# 
+# Dependencies:
+#   See .post_url_idle_timeout.
+# 
+# Example:
+#    cleartrust.agent.post_url_idle_timeout_list=/processdata.jsp
+#
+cleartrust.agent.post_url_idle_timeout_list=
+
+
+# Specify whether extended authorization results should be requested,
+# and if so, in what form.  This will only have an effect on calls where
+# the server supports extended results, and reporting of such results
+# has been enabled.
+# 
+# The results can be exported into the headers ct-ext-result (encrypted)
+# and ct-ext-result-cleartext, as well as be expanded in redirection
+# URLs using the tags <%%ext_result%> and<%%%ext_result_clear%>.
+# 
+# Allowed values:
+#   encrypted  Request encrypted extended results
+#   cleartext  Request cleartext extended results
+# 
+#   Or a comma separated list of the above values, to request both
+#   encrypted and cleartext results.
+# 
+#
+cleartrust.agent.extended_results=
+
+
+# Specifies the characterset or encoding used by the browser.
+# 
+# NOTE: This parameter has been specifically provided to allow support
+# for accented characters in passwords.If passwords are constituted with
+# characters other than 7-bit clear (ASCII), the Agent must know the
+# characterset or encoding used by the browser to correctly convert such
+# passwords to Unicode. If the value specified is "UTF-8", the Agent
+# will assume that the password is already in Unicode form. Currently,
+# only a limited set of characterset or encoding are supported by the
+# Agent.
+# 
+# Allowed Values:
+#   ISO-8859-1
+#   ISO-8859-2
+#   ISO-8859-15
+#   UTF-8
+# 
+# Example:
+#   cleartrust.agent.client_encoding=ISO-8859-1
+#
+cleartrust.agent.client_encoding=UTF-8
+
+
+# Specifies a list of domain names that can be trusted by the agent. Do not
+# specify fully qualified domain names(FQDN).
+# 
+# Note:
+# 1. Agents participating in ISSO environment should include respective master
+#    or slave domain names in this parameter.
+# 2. Mandatory to add domain name of this host, if this parameter is not
+#    empty.
+# 
+# Allowed Values:
+# Comma-separated list of valid domain names(Do not prepend with a period).
+# 
+# Example:
+# cleartrust.agent.trusted_domains_list=rsact.com, rsa.com
+# 
+#
+cleartrust.agent.trusted_domains_list=
+
+
+# Specifies whether the Adaptive Authentication is enabled in
+#  Silent Mode or not.
+# 
+# Allowed Values:
+#   True     Silent Mode is enabled.
+#   False    Silent Mode is disabled.
+# 
+# Default Value:
+#   False
+# 
+# Dependencies:
+#   Used only if cleartrust.agent.aa.enabled=True or Adaptive
+# Authentication is configured as an authentication type.
+#
+cleartrust.agent.aa_silent_mode=False
+
+
+# Specifies the location of the page for Adaptive Authentication Enrollment
+# process.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document
+#   root, or a full URL to the file.
+#
+cleartrust.agent.aa.enroll_page=/cleartrust/ct_enroll.jsp
+
+
+# Specifies the location of the Adaptive Authentication Passcode page.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document
+#   root, or a full URL to the file.
+# 
+# Dependencies:
+#   Used only if cleartrust.agent.aa.enabled=True or Adaptive Authentication
+# is configured as an authentication type.
+#
+cleartrust.agent.aa.oob_passcode_page=/cleartrust/ct_passcode.jsp
+
+
+# Specifies the location of the page for Adaptive Authentication Enrollment
+# images. This will display the images from which user can choose an image for
+# their enrollment.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document
+#   root, or a full URL to the file.
+#
+cleartrust.agent.aa.enroll_images_page=/cleartrust/ct_enroll_images.jsp
+
+
+# Specifies the location of the page for Adaptive Authentication Challenge
+# process.
+# 
+# Allowed Values:
+#   The relative directory path and filename in your web server document
+#   root, or a full URL to the file.
+#
+cleartrust.agent.aa.challenge_page=/cleartrust/ct_challenge.jsp
+
+
+# This flag determines the action to take, when Agent receives any Adaptive
+# Authentication connection failure from Authorization Server.
+# 
+# Set this value to 'true' to allow the user to proceed further or to 'false'
+# to deny the user access.
+# 
+# Allowed Values:
+#   True     Allow the user to proceed further.
+#   False    Deny the user access to proceed further.
+# 
+# Default Value:
+#   True
+#
+cleartrust.agent.aa.allow_on_failure=True
+
+
+# Sets the amount of time the Adaptive Authentication cookie persists
+# in a browser.
+# 
+# Allowed Values:
+#   Any positive integer followed by Secs (seconds), Mins (minutes), or Hrs
+#   (hours).
+#   If set to zero, the cookie is valid until the browser exits.
+#
+cleartrust.agent.aa.cookie_expiration=0 Mins
+
+
+# Specifies the name of the Adaptive Authentication cookie.
+#  If Adaptive Authentication (AA) is enabled, the agent
+#  creates a cookie with this name and sets it in the browser.
+# 
+# Allowed Values:
+#   Any string with no spaces or special characters.
+# 
+# Dependencies:
+#   Applies if cleartrust.agent.aa.enabled=True or Adaptive
+#   Authentication is configured as an authentication type.
+#
+cleartrust.agent.aa.cookie_name=AA_SESSION_COOKIE
+
+
+# This parameter decides whether ACTSESSION cookie should be blanked out
+# after use or not.
+# 
+# Allowed Values:
+#   True       The ACTSESSION cookie is cleared after use.
+#   False      The ACTSESSION cookie is not cleared after use.
+# 
+# Default Value:
+#   False
+#
+cleartrust.agent.clear_retention_cookie_after_use=False
+
+
+# Specifies the name of the cookie which contains the language to be used
+# by the browser to display challenge and enrollment questions. If this cookie
+# is set, then the value of this cookie would override the browser language
+# sent to the adaptive authentication server.
+# 
+# Allowed Values:
+#     Any string with no spaces or special characters.
+# 
+# Dependencies:
+#     This parameter only applies if cleartrust.agent.aa.enabled = True or
+# Adaptive authentication is configured as an authentication type.
+#
+cleartrust.agent.language_cookie_name=
+
+
+# Specifies whether the Agent startup failure mode is hard or soft.
+# 
+#  Allowed Values:
+#    hard     In this mode, all the Virtual Host entries should be
+#             correct for the agent to start.
+#    soft     In this mode, atleast one of the Virtual Host entries
+#             should be correct for the agent to start.
+# 
+#  Example:
+#     cleartrust.agent.startupfailuremode=soft
+#
+cleartrust.agent.startupfailuremode=hard
+
+
+</Global>
+
+
+# Defines Server pools. Each server pool contains all necessary
+# configuration parameters for establishing connections to RSA
+# ClearTrust Servers, including SSL/keystore parameters, addresses and
+# ports, and other information. Each pool is named, and may be
+# referenced inside a virtual server declaration or in the global
+# section.
+#
+<Pool id=__default__>
+
+
+# Supplies a list of addresses of the RSA ClearTrust Server Dispatcher(s).
+# Listing multiple Servers provides failover capability.
+# 
+# Allowed Values:
+#   A comma-separated list of Dispatcher Servers expressed using the form
+#   host:port, where 'host' is either the IP address or the fully
+#   qualified domain name of the Server.
+# 
+# Example:
+#   cleartrust.agent.dispatcher_list=192.168.1.1:5608,dispatcher.rsa.com:5608
+# 
+# Dependencies:
+#   The Dispatcher addresses listed must match the
+#   cleartrust.dispatcher.list_port that has been set in the dispatcher.conf
+#   file of each Dispatcher.
+#
+cleartrust.agent.dispatcher_list=<%= node['rms']['ct_agents']%>
+
+
+# Sets the maximum time that the Agent will wait without receiving a response
+# from the Dispatcher before declaring it unreachable.
+# 
+# Allowed Values:
+#   A valid integer followed by Secs (seconds), Mins (minutes), or Hrs (hours).
+#
+cleartrust.agent.dispatcher_timeout=10 Secs
+
+
+# Sets the interval for refreshing the Authorization Server information
+# provided by the Dispatcher.
+# 
+# Allowed Values:
+#   A valid integer followed by Secs (seconds), Mins (minutes), or Hrs (hours).
+#
+cleartrust.agent.auth_server_pool_refresh=15 Mins
+
+
+# Specifies the communications mode used between the Agent and other
+# components. Currently this affects connections to Dispatchers and
+# Authorization Servers (the Key Server uses a secure key exchange algorithm,
+# making SSL encryption unnecessary).
+# 
+# Allowed Values:
+#   Clear         Cleartext
+#   Anon          Anonymous SSL
+#   Auth          Authenticated SSL
+# 
+# Dependencies:
+#   1) This parameter must match the cleartrust.net.ssl.use parameter set in
+#      the aserver.conf and dispatcher.conf files, and the
+#      cleartrust.runtime_api.security parameter set in aserver.conf.
+# 
+#   2) If this parameter is set to Auth, for Agents version 3.0 or newer, you
+#      must also set cleartrust.dispatcher.list_port.backward_compatible to
+#      'False' in dispatcher.conf.
+#
+cleartrust.agent.ssl.use=Anon
+
+
+# Specifies the keystore name of the PKCS #12 keystore containing the
+# Agent's private key. This parameter must be configured appropriately if the
+# RSA ClearTrust Servers require authenticated SSL connections. Obtain this
+# information from the administrator who created the Server certificate.
+# 
+# When you enter the keystore file name, you must enter the fully qualified
+# pathname. (e.g. C:\keystore\keys.p12 or /opt/ctrust/agent/conf/keys.p12)
+# 
+# Allowed Values:
+#   Absolute path to a PKCS #12 keystore or if the file is located in the RSA
+#   ClearTrust agent root (CTAgentRoot) conf folder, specify only the filename.
+# 
+# Dependencies:
+#   If this parameter is set, the parameters ssl.keystore_passphrase and
+#   ssl.private_key_passphrase must also be configured appropriately.
+# 
+# Example:
+#   cleartrust.agent.ssl.keystore=/opt/ctrust/agent/apache/conf/keys.p12
+#
+cleartrust.agent.ssl.keystore=
+
+
+# Specifies the path to the PKCS #12 keystore containing the Agent's
+# certificate. This parameter must be configured appropriately if the
+# RSA ClearTrust Servers require authenticated SSL connections. Obtain this
+# information from the administrator who created the Server certificate.
+# 
+# When you enter the keystore file name, you must enter the fully qualified
+# pathname.(e.g. C:\keystore\keys.p12 or /opt/ctrust/agent/conf/keys.p12)
+# 
+# Allowed Values:
+#   Absolute path to a PKCS #12 keystore or if the file is located in the RSA
+#   ClearTrust agent root (CTAgentRoot) conf folder, specify only the filename.
+# 
+# Dependencies:
+#   If this parameter is set, the parameter ssl.ca_keystore_passphrase must
+#   also be configured appropriately.
+# 
+# Example:
+#   cleartrust.agent.ssl.keystore=/opt/ctrust/agent/apache/conf/keys.p12
+#
+cleartrust.agent.ssl.ca_keystore=
+
+
+# Specifies the passphrase used to verify the integrity of the PKCS #12
+# keystore containing the private key. Obtain this information from the
+# administrator who created the Server certificate.
+# 
+# Allowed Values:
+#   Valid passphrase used to unlock the keystore. This is case sensitive.
+# 
+# Dependencies:
+#   This parameter must be configured appropriately if ssl.keystore is set
+#   and authenticated SSL connections are required by the RSA ClearTrust
+#   Servers.
+#
+cleartrust.agent.ssl.keystore_passphrase=
+
+
+# Specifies the passphrase used to decrypt the private key in the PKCS #12
+# private-key keystore. Obtain this information from the administrator who
+# created the Server certificate.
+# 
+# Allowed Values:
+#   Valid passphrase used to decrypt the private key. This is case sensitive.
+# 
+# Dependencies:
+#   This parameter must be configured appropriately if ssl.keystore is set
+#   and authenticated SSL connections are required by the RSA ClearTrust
+#   Servers.
+#
+cleartrust.agent.ssl.private_key_passphrase=
+
+
+# Specifies the alias of the private key in the PKCS #12 private-key keystore.
+# 
+# Allowed Values:
+#   An alphanumeric string, no spaces or special characters.
+#
+cleartrust.agent.ssl.private_key_alias=
+
+
+# Specifies the passphrase used to verify the integrity of the PKCS #12
+# CA keystore.
+# 
+# Allowed Values:
+#   Valid passphrase used to unlock the keystore. This is case sensitive.
+# 
+# Dependencies:
+#   This parameter must be configured appropriately if ssl.ca_keystore is set
+#   and authenticated SSL connections are required by the RSA ClearTrust
+#   Servers.
+#
+cleartrust.agent.ssl.ca_keystore_passphrase=
+
+
+# Optional parameter. Supplies a static list of Authorization Server(s) to be
+# used instead of, or in conjunction with, dynamic list obtained from the
+# Dispatcher.
+# 
+# Authorization Server(s) listed are used, instead of obtaining a dynamic list,
+# only if the dispatcher list is left blank. Listing multiple servers provide
+# failover capability.
+# 
+# NOTE:
+# In most cases, Authorization Server(s) should not be listed here if
+# registering with dispatcher and dispatcher list is not blank.
+# 
+# Allowed Values:
+#   A comma-separated list of Authorization Server(s) expressed using the form
+#   host:port[:location_class], where 'host' is either the IP address or the
+#   fully qualified domain name of the server. The location class is optional,
+#   and may be used to determine Authorization Server preference. If a location
+#   class is specified, it must match the class defined by
+#   cleartrust.aserver.location_class in the aserver.conf.
+# 
+# Dependencies:
+#   This parameter should be used in conjunction with
+#   cleartrust.dispatcher.plugin_auth_format=IP (default)
+# 
+# Example:
+#   cleartrust.agent.auth_server_list=192.168.1.1:5615:Bedford,foo.rsa.com:5615
+#
+cleartrust.agent.auth_server_list=
+
+
+# Sets the maximum time that the Agent will wait without receiving a response
+# from the Authorization Server before declaring it unreachable.
+# 
+# Allowed Values:
+#   A valid integer followed by Secs (seconds), Mins (minutes), or Hrs (hours).
+#
+cleartrust.agent.auth_server_timeout=15 Secs
+
+
+# Sets the way in which the Dispatcher is chosen.
+# 
+# Allowed Values:
+#   STANDARD      Dispatchers are accessed in the order they are listed
+#                 in the Agent configuration file - standard list.
+# 
+#   RANDOMIZED    The dispatcher list specified in the Agent configuration
+#                 file is randomized at start-up and a new list of dispatchers
+#                 is formed - randomized list.
+# 
+#                 All requests are sent to the first Dispatcher in the standard
+#                 or randomized list until a failure occurs, in which case
+#                 requests are sent to the next Dispatcher in the list.
+# Dependencies:
+#                 If this parameter is not set then its value is inherited
+#                 from auth_server_mode.  If auth_server_mode=STANDARD then
+#                 dispatcher_mode will be STANDARD.  If auth_server_mode is
+#                 DISTRIBUTED then dispatcher_mode will be RANDOMIZED.
+#
+cleartrust.agent.dispatcher_mode=STANDARD
+
+
+# Sets the mode indicating how Authorization Server pools route requests.
+# 
+# Allowed Values:
+#   STANDARD      All requests are sent to a single Authorization Server until
+#                 a failure occurs, in which case requests are routed to the
+#                 next server in the list.
+#   DISTRIBUTED   The requests are distributed amongst the available servers.
+#                 The .auth_server_submode parameter must be set to select the
+#                 type of distribution mechanism to be used when this value is
+#                 set for this parameter. 
+#
+cleartrust.agent.auth_server_mode=DISTRIBUTED
+
+
+# Sets the type of distribution mechanism used for the Authorization Server
+# pools. This parameter takes affect only when .auth_server_mode is set to
+# DISTRIBUTED.
+# 
+# Allowed Values:
+#   ADAPTIVE      When sending a new request, the server with the lowest number
+#                 of outstanding requests is selected.  This will send more
+#                 requests to servers capable of higher throughput.  It also
+#                 quickly adapts to the current load on each server.
+#   ROUNDROBIN    Requests are sent to each of the available servers in a
+#                 round-robin fashion.
+# 
+# Dependencies:
+#   This parameter must be configured appropriately if .auth_server_mode is set
+#   to DISTRIBUTED. 
+#
+cleartrust.agent.auth_server_submode=ADAPTIVE
+
+
+# Sets the ordered list of location classes for prioritizing Authorization
+# Servers. Authorization Servers in a higher class are always used before
+# those of a lower class.
+# 
+# Allowed Values:
+#   A comma-separated list of location classes as specified by the parameter
+#   cleartrust.aserver.location_class, set in the aserver.conf file for each
+#   Authorization Server. List the classes in order of preference.
+# 
+# Example:
+#   cleartrust.agent.location_class_priority=Bedford,Tokyo
+#
+cleartrust.agent.location_class_priority=KDC,PDC
+
+
+# Supplies the addresses of the RSA ClearTrust Key Server(s). The Agent
+# contacts Key Servers to get the secret keys needed to encrypt and decrypt
+# SSO cookies. Listing multiple servers provide failover capability.
+# 
+# Allowed Values:
+#   A comma-separated list of Key Servers expressed using the form
+#   host:port, where 'host' is either the IP address or the fully qualified
+#   domain name of the server. List the Servers in order of preference.
+# 
+# Example:
+#   cleartrust.agent.keyserver_list=192.168.1.1:5606,keyserver.rsa.com:5606
+# 
+# Dependencies:
+#   This parameter needs to be configured if at least one of the virtual
+#   host sections using this pool configuration is participating in ISSO.
+#
+cleartrust.agent.keyserver_list=
+
+
+# Specifies the client name used to identify the shared secret for this web
+# server. This secret was generated using the keygen utility; see your Agent
+# Installation and Configuration Guide for more information on creating a
+# shared secret.
+# 
+# Allowed Values:
+#   The <webservername> used when you created the shared secret for this web
+#   server. The name is case sensitive.
+# 
+# Example:
+#   cleartrust.agent.key_client_name=MyKeyClient
+# 
+# Dependencies:
+#   This parameter needs to be configured if at least one of the virtual
+#   host sections using this pool configuration is participating in ISSO.
+#
+cleartrust.agent.key_client_name=
+
+
+# Specifies the shared secret generated by the keygen utility. This is used
+# for communication between the Agent and the Key Server.
+# 
+# Allowed Values:
+#   The text string generated by the keygen utility for this web server.
+# 
+# Example:
+#   cleartrust.agent.key_client_secret=mC8qtB+7qBpyuS47D1t9JpcM7F01x5cwydLRxUujn8Bk
+# 
+# Dependencies:
+#   This parameter needs to be configured if at least one of the virtual
+#   host sections using this pool configuration is participating in ISSO.
+#
+cleartrust.agent.key_client_secret=
+
+
+# Sets the number of times the Agent will cycle through the pool to
+# search for a valid Authorization Server connection.
+# 
+# Allowed Values:
+#   A valid integer.
+#
+cleartrust.agent.retry_count=5
+
+
+# Specifies whether TCP_NODELAY is enabled or disabled for the sockets
+# from the Agent to the Dispatcher and Authorization Servers.
+# Enables or disables Nagle algorithm. For performance reasons on most
+# platforms this must be enabled to set to 'True'.
+# 
+# Allowed Values:
+#   True or False
+# 
+#
+cleartrust.agent.socket_tcp_nodelay=True
+
+
+# During pool refresh, no more than the specified number of Authorization
+# Server connections will be opened.  If the limit is set to zero,
+# opening connections to all known servers is preserved.
+# 
+# Allowed Values:
+#   0:                no limit
+#   Positive integer: upper limit for Authorization Server connections
+# 
+# Example:
+#   cleartrust.agent.max_open_connections=20
+#
+cleartrust.agent.max_open_connections=20
+
+
+</Pool>
+
+
+# Each virtual host is defined by an IP address, host name and port.
+# Each may be a wildcard, allowing for flexible combinations of
+# name-based and IP-based hosting.
+# 
+# Examples:
+# Name-only virtual host:
+#   <VirtualHost address=* name=www.rsa.com port=*>
+#   <VirtualHost address=* name=www.rsasecurity.com port=*>
+# 
+# IP-based virtual host:
+#   <VirtualHost address=192.168.1.1 name=* port=*>
+#   <VirtualHost address=192.168.1.2 name=* port=*>
+# 
+# Port-based virtual host:
+#   <VirtualHost address=* name=* port=80>
+#   <VirtualHost address=* name=* port=81>
+# 
+# Default Declaration (applies to all virtual hosts unless a more specific
+# match is found):
+#   <VirtualHost address=* name=* port=*>
+# 
+# Combinations:
+#   <VirtualHost address=205.181.76.22 name=www.rsa.com port=443>
+#   <VirtualHost address=205.181.76.22 name=intranet.rsa.com port=80>
+#   <VirtualHost address=192.168.1.1 name=intranet.rsa.com port=8080>
+# 
+# Multiple addresses and names can be specified in a declaration if needed.
+# Consult the RSA ClearTrust documentation for details on matching rules
+# and priorities.
+# 
+# Valid values for 'address' are:
+#     a) A valid list of IP addresses separated by comma.
+#         Example: address=192.168.1.1,192.168.1.2,192.168.1.3
+#     b) A valid IP address
+#         Example: address=10.104.88.55
+#     c) '*' for any IP address
+# 
+# Valid values for 'name' are:
+#     a) A valid list of fully qualified domain names (FQDN)
+#         Example: name=www.rsa.com,www.rsasecurity.com
+#     b) A fully qualified domain name (FQDN)
+#         Example: name=www.rsa.com
+#     c) A list of partial domain names (will match all sub-domains)
+#         Example: name=.rsa.com,.rsasecurity.com
+#         Note: a '.' (period) must preceed a partial domain name
+#     d) A partial domain name (will match all sub-domains)
+#         Example: name=.rsa.com (will match all requests in rsa.com domain)
+#         Note: a '.' (period) must preceed a partial domain name
+#     e) '*' for any host name
+# 
+# Valid values for 'port' are:
+#     a) A list of valid port number between 1 and 65534
+#         Example: port=80,8080
+#     b) A valid port number between 1 and 65534
+#         Example: port=80
+#     c) '*' for any port
+#
+<VirtualHost name=* address=* port=*>
+cleartrust.agent.web_server_name=<%= node['rms']['webserver']%>
+</VirtualHost>
+
+# The following parameters are used by intersite single sign-on (ISSO).
+# Every virtual host section participating in the ISSO must have the following
+# parameters configured appropriately.
+# 
+# Specifies if this virtual host is the master domain. The master domain
+# is forwarded cookies from servers in slave domains after authentication.
+# 
+# Allowed Values:
+#   True     This virtual host is the master domain.
+#   False    This virtual host is a slave domain.
+# 
+# Dependencies:
+#   Only one master domain can be defined.
+#
+#cleartrust.agent.isso.is_master=False
+
+
+# Specifies the master domain URL (domain name and port)
+# 
+# Allowed Values:
+#   http://domain.name:port or https://domain.name:port.
+#   If 'port' is not specified here, the default port (80 for http, 443 for
+#   https) is used.
+#
+#cleartrust.agent.isso.master_url=http://www.bar.com
+
+
+# Specifies the URL (domain name and port) of this web server.
+# 
+# Allowed Values:
+#   http://domain.name:port or https://domain.name:port.
+#   If 'port' is not specified here, the default port (80 for http, 443 for
+#   https) is used.
+#
+#cleartrust.agent.isso.self_url=http://www.foo.com:8080
